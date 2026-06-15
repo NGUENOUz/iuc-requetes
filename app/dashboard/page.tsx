@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   GraduationCap, Home, FileText, PlusCircle, Bell,
   User, FileCheck, Settings, LogOut, Search,
@@ -17,11 +18,11 @@ const STATS = [
 ];
 
 const REQUETES = [
-  { icon: GraduationCap, title: 'Réclamation de note', date: 'Soumis le 17 mai 2025', statut: 'En cours', statutColor: 'bg-yellow-100 text-yellow-700' },
-  { icon: FileCheck, title: "Demande d'attestation", date: 'Soumis le 15 mai 2025', statut: 'En attente', statutColor: 'bg-blue-100 text-blue-700' },
-  { icon: LayoutGrid, title: 'Changement de groupe', date: 'Soumis le 12 mai 2025', statut: 'Résolue', statutColor: 'bg-emerald-100 text-emerald-700' },
-  { icon: FileText, title: 'Problème de paiement', date: 'Soumis le 08 mai 2025', statut: 'En cours', statutColor: 'bg-yellow-100 text-yellow-700' },
-  { icon: Bell, title: 'Autre réclamation', date: 'Soumis le 02 mai 2025', statut: 'Résolue', statutColor: 'bg-emerald-100 text-emerald-700' },
+  { id: 'REQ-1248', icon: GraduationCap, title: 'Réclamation de note', date: 'Soumis le 17 mai 2025', statut: 'En cours', statutColor: 'bg-yellow-100 text-yellow-700' },
+  { id: 'REQ-1247', icon: FileCheck, title: "Demande d'attestation", date: 'Soumis le 15 mai 2025', statut: 'En attente', statutColor: 'bg-blue-100 text-blue-700' },
+  { id: 'REQ-1246', icon: LayoutGrid, title: 'Changement de groupe', date: 'Soumis le 12 mai 2025', statut: 'Résolue', statutColor: 'bg-emerald-100 text-emerald-700' },
+  { id: 'REQ-1245', icon: FileText, title: 'Problème de paiement', date: 'Soumis le 08 mai 2025', statut: 'En cours', statutColor: 'bg-yellow-100 text-yellow-700' },
+  { id: 'REQ-1241', icon: Bell, title: 'Autre réclamation', date: 'Soumis le 02 mai 2025', statut: 'Résolue', statutColor: 'bg-emerald-100 text-emerald-700' },
 ];
 
 const CHART_POINTS = [
@@ -38,9 +39,9 @@ const polyline = CHART_POINTS.map(p => `${cx(p.x)},${cy(p.y)}`).join(' ');
 const area = `M${cx(0)},${cy(0)} ` + CHART_POINTS.map(p => `L${cx(p.x)},${cy(p.y)}`).join(' ') + ` L${cx(11)},${H - PAD} L${cx(0)},${H - PAD} Z`;
 
 const NAV = [
-  { label: 'Tableau de bord', icon: Home, active: true },
-  { label: 'Mes requêtes', icon: FileText },
-  { label: 'Nouvelle requête', icon: PlusCircle },
+  { label: 'Tableau de bord', icon: Home, active: true, href: '/dashboard' },
+  { label: 'Mes requêtes', icon: FileText, href: '/mes-requetes' },
+  { label: 'Nouvelle requête', icon: PlusCircle, href: '/nouvelle-requete' },
 ];
 const NAV2 = [
   { label: 'Notifications', icon: Bell, badge: 3 },
@@ -118,9 +119,10 @@ export default function StudentDashboard() {
 
         <nav className="flex-1 p-3 space-y-1 overflow-hidden">
           {!collapsed && <p className="text-green-300 text-[10px] uppercase tracking-widest px-3 pt-2 pb-1">Requêtes</p>}
-          {NAV.map(({ label, icon: Icon, active }) => (
-            <button
+          {NAV.map(({ label, icon: Icon, active, href }) => (
+            <Link
               key={label}
+              href={href}
               title={collapsed ? label : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 active ? 'bg-emerald-500 text-white' : 'hover:bg-white/10 text-green-100'
@@ -128,7 +130,7 @@ export default function StudentDashboard() {
             >
               <Icon size={18} className="shrink-0" />
               {!collapsed && label}
-            </button>
+            </Link>
           ))}
 
           {!collapsed && <p className="text-green-300 text-[10px] uppercase tracking-widest px-3 pt-4 pb-1">Notifications</p>}
@@ -285,11 +287,15 @@ export default function StudentDashboard() {
             <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 min-w-0">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-slate-900">Mes dernières requêtes</h2>
-                <button className="text-emerald-600 text-xs font-semibold hover:underline">Voir tout</button>
+                <Link href="/mes-requetes" className="text-emerald-600 text-xs font-semibold hover:underline">Voir tout</Link>
               </div>
               <div className="space-y-3">
-                {REQUETES.map(({ icon: Icon, title, date, statut, statutColor }) => (
-                  <div key={title} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group">
+                {REQUETES.map(({ id, icon: Icon, title, date, statut, statutColor }) => (
+                  <Link
+                    key={id}
+                    href={`/mes-requetes/${id}`}
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group"
+                  >
                     <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                       <Icon size={18} className="text-slate-600" />
                     </div>
@@ -299,7 +305,7 @@ export default function StudentDashboard() {
                     </div>
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg shrink-0 ${statutColor}`}>{statut}</span>
                     <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-500 transition-colors shrink-0" />
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -309,12 +315,12 @@ export default function StudentDashboard() {
               <h2 className="font-bold text-slate-900 mb-4">Actions rapides</h2>
               <div className="space-y-3">
                 {[
-                  { icon: Plus, label: 'Nouvelle requête', sub: 'Soumettre une demande', bg: 'bg-emerald-50', iconBg: 'bg-emerald-500', text: 'text-emerald-700' },
-                  { icon: FileText, label: 'Mes requêtes', sub: 'Voir toutes mes demandes', bg: 'bg-blue-50', iconBg: 'bg-blue-500', text: 'text-blue-700' },
-                  { icon: Bell, label: 'Notifications', sub: 'Consulter mes notifications', bg: 'bg-yellow-50', iconBg: 'bg-yellow-500', text: 'text-yellow-700', badge: 3 },
+                  { icon: Plus, label: 'Nouvelle requête', sub: 'Soumettre une demande', bg: 'bg-emerald-50', iconBg: 'bg-emerald-500', text: 'text-emerald-700', href: '/nouvelle-requete' },
+                  { icon: FileText, label: 'Mes requêtes', sub: 'Voir toutes mes demandes', bg: 'bg-blue-50', iconBg: 'bg-blue-500', text: 'text-blue-700', href: '/mes-requetes' },
+                  { icon: Bell, label: 'Notifications', sub: 'Consulter mes notifications', bg: 'bg-yellow-50', iconBg: 'bg-yellow-500', text: 'text-yellow-700', badge: 3, href: '/notifications' },
 
-                ].map(({ icon: Icon, label, sub, bg, iconBg, text, badge }) => (
-                  <button key={label} className={`w-full flex items-center gap-3 p-3 rounded-xl ${bg} hover:brightness-95 transition-all text-left`}>
+                ].map(({ icon: Icon, label, sub, bg, iconBg, text, badge, href }) => (
+                  <Link key={label} href={href} className={`w-full flex items-center gap-3 p-3 rounded-xl ${bg} hover:brightness-95 transition-all text-left`}>
                     <div className={`${iconBg} w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0`}>
                       <Icon size={18} />
                     </div>
@@ -324,7 +330,7 @@ export default function StudentDashboard() {
                     </div>
                     {badge && <span className="bg-emerald-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{badge}</span>}
                     <ChevronRight size={16} className="text-slate-400 shrink-0" />
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>

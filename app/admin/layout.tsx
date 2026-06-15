@@ -65,14 +65,12 @@ const navSections: NavSection[] = [
     items: [
       { href: '/admin/assistant-ia', label: 'Assistant IA', icon: Brain, isNew: true },
       { href: '/admin/suggestions-ia', label: 'Suggestions IA', icon: Lightbulb },
-      { href: '/admin/analyse-predictive', label: 'Analyse prédictive', icon: TrendingUp },
     ],
   },
   {
     label: 'PARAMÈTRES',
     items: [
       { href: '/admin/parametres', label: 'Paramètres système', icon: Settings },
-      { href: '/admin/journal', label: "Journal d'activité", icon: Activity },
     ],
   },
 ];
