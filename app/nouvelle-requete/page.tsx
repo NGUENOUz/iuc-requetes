@@ -1,41 +1,56 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, FileText, Upload, X, AlertCircle, CheckCircle,
-  Send, Home, Paperclip
+  Send, Home, Paperclip, Loader2
 } from 'lucide-react';
 import StudentLayout from '../components/StudentLayout';
-
-const CATEGORIES = [
-  { value: 'scolarite', label: 'Scolarité', description: 'Notes, inscriptions, certificats' },
-  { value: 'documents', label: 'Documents', description: 'Attestations, relevés de notes' },
-  { value: 'pedagogie', label: 'Pédagogie', description: 'Cours, emploi du temps, groupes' },
-  { value: 'finance', label: 'Finance', description: 'Paiements, bourses, frais' },
-  { value: 'bourse', label: 'Bourse & Aide', description: 'Demandes de bourse et aides financières' },
-  { value: 'autre', label: 'Autre', description: 'Autres demandes' },
-];
+import { useStudent, useCategories } from '@/lib/hooks';
+import toast from 'react-hot-toast';
+import { supabase } from '@/lib/supabase';
 
 const PRIORITES = [
-  { value: 'basse', label: 'Basse', color: 'bg-slate-100 text-slate-600' },
-  { value: 'moyenne', label: 'Moyenne', color: 'bg-yellow-100 text-yellow-700' },
-  { value: 'haute', label: 'Haute', color: 'bg-red-100 text-red-700' },
+  { value: 'basse', label: 'Basse', color: 'bg-slate-100 text-slate-600 ring-slate-500' },
+  { value: 'moyenne', label: 'Moyenne', color: 'bg-yellow-100 text-yellow-700 ring-yellow-500' },
+  { value: 'haute', label: 'Haute', color: 'bg-red-100 text-red-700 ring-red-500' },
 ];
 
 function NouvelleRequeteContent() {
   const router = useRouter();
+  const { student, loading: studentLoading } = useStudent();
+  const { categories, loading: categoriesLoading } = useCategories();
+  
   const [formData, setFormData] = useState({
     titre: '',
     categorie: '',
-    priorite: 'moyenne',
+    priorite: '',
     description: '',
   });
   const [fichiers, setFichiers] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Définir une priorité par défaut une fois les données chargées
+  useEffect(() => {
+    if (!formData.priorite && categories.length > 0) {
+      // Récupérer la priorité "Normale" ou "Moyenne" par défaut
+      fetch('/api/priorities')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data.length > 0) {
+            const normalPriority = data.data.find((p: any) => p.name === 'Normale' || p.name === 'Moyenne');
+            if (normalPriority) {
+              setFormData(prev => ({ ...prev, priorite: normalPriority.id }));
+            }
+          }
+        })
+        .catch(console.error);
+    }
+  }, [categories, formData.priorite]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -73,15 +88,68 @@ function NouvelleRequeteContent() {
     if (!validate()) return;
 
     setLoading(true);
-    // Simulation d'envoi
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setLoading(false);
-    setSuccess(true);
+    
+    try {
+      // Récupérer le token de session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      console.log('[Create Request] Session:', session ? 'Found' : 'Not found');
+      console.log('[Create Request] Access token length:', session?.access_token?.length);
+      
+      if (!session) {
+        toast.error('Session expirée. Veuillez vous reconnecter.');
+        router.push('/');
+        return;
+      }
 
-    // Redirection après 2 secondes
-    setTimeout(() => {
-      router.push('/mes-requetes');
-    }, 2000);
+      // Récupérer l'ID de la priorité sélectionnée
+      const priorityRes = await fetch('/api/priorities');
+      const priorityData = await priorityRes.json();
+      const selectedPriority = priorityData.data?.find(
+        (p: any) => p.name.toLowerCase() === formData.priorite.toLowerCase()
+      );
+
+      if (!selectedPriority) {
+        toast.error('Erreur de priorité');
+        setLoading(false);
+        return;
+      }
+
+      // Créer la requête
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: formData.titre,
+          description: formData.description,
+          category_id: formData.categorie,
+          priority_id: selectedPriority.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error?.message || 'Erreur lors de la création de la requête');
+      }
+
+      toast.success('Requête créée avec succès !');
+      setSuccess(true);
+
+      // Redirection après 2 secondes
+      setTimeout(() => {
+        router.push('/mes-requetes');
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('Error creating request:', error);
+      toast.error(error.message || 'Erreur lors de la création de la requête');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -101,6 +169,18 @@ function NouvelleRequeteContent() {
           >
             Voir mes requêtes
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher un loader pendant le chargement initial
+  if (studentLoading || categoriesLoading) {
+    return (
+      <div className="p-3 sm:p-6 flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
+          <p className="text-slate-600 font-medium">Chargement du formulaire...</p>
         </div>
       </div>
     );
@@ -155,25 +235,25 @@ function NouvelleRequeteContent() {
 
       {/* Formulaire */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Catégorie */}
+        {/* Catégorie - Dynamique */}
         <div className="bg-white rounded-2xl border shadow-sm p-5">
           <label className="block text-sm font-bold text-slate-900 mb-3">
             Catégorie de la requête <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {CATEGORIES.map(({ value, label, description }) => (
+            {categories.map((category) => (
               <button
-                key={value}
+                key={category.id}
                 type="button"
-                onClick={() => setFormData(prev => ({ ...prev, categorie: value }))}
+                onClick={() => setFormData(prev => ({ ...prev, categorie: category.id }))}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  formData.categorie === value
+                  formData.categorie === category.id
                     ? 'border-emerald-500 bg-emerald-50'
                     : 'border-slate-200 hover:border-slate-300 bg-white'
                 }`}
               >
-                <p className="font-bold text-slate-900 text-sm">{label}</p>
-                <p className="text-xs text-slate-500 mt-1">{description}</p>
+                <p className="font-bold text-slate-900 text-sm">{category.name}</p>
+                <p className="text-xs text-slate-500 mt-1">{category.description}</p>
               </button>
             ))}
           </div>

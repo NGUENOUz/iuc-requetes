@@ -16,9 +16,10 @@ import { requireRole } from '@/lib/middleware/auth.middleware';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Seuls les agents, chefs de service et admins peuvent changer le statut
     const { error: authError, user: userData } = await requireRole(request, ['admin', 'chef_service', 'agent']);
     if (authError) return authError;
@@ -35,7 +36,7 @@ export async function POST(
         status:request_statuses(*),
         student:users!requests_student_id_fkey(id, first_name, last_name)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!existingRequest) {
@@ -85,7 +86,7 @@ export async function POST(
     const { data: updatedRequest, error: updateError } = await supabaseAdmin
       .from('requests')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select(`
         *,
         student:users!requests_student_id_fkey(id, first_name, last_name, email),
@@ -109,7 +110,7 @@ export async function POST(
     await supabaseAdmin
       .from('request_history')
       .insert({
-        request_id: params.id,
+        request_id: id,
         user_id: userData!.id,
         action: 'status_changed',
         old_value: existingRequest.status.name,
@@ -122,7 +123,7 @@ export async function POST(
       await supabaseAdmin
         .from('request_comments')
         .insert({
-          request_id: params.id,
+          request_id: id,
           user_id: userData!.id,
           content: validatedData.comment,
           is_internal: false,
@@ -146,7 +147,7 @@ export async function POST(
         type: 'status_changed',
         title: 'Changement de statut',
         message: notificationMessage,
-        link: `/dashboard/requetes/${params.id}`,
+        link: `/dashboard/requetes/${id}`,
       });
 
     return successResponse(updatedRequest);

@@ -3,21 +3,10 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Brain, Send, User, Sparkles, Database, HelpCircle,
-  CheckCircle2, RefreshCw, Zap, Sliders, ArrowRight,
-  TrendingUp, BarChart3, Clock, AlertCircle
+  Brain, Send, Sparkles, Database, HelpCircle,
+  RefreshCw, Zap, ArrowRight, ArrowLeft
 } from 'lucide-react';
-
-/* ═══════════════════════ TYPES & CONFIG ═══════════════════════ */
-
-interface Message {
-  id: string;
-  sender: 'user' | 'ai';
-  text: string;
-  timestamp: string;
-  suggestions?: string[];
-  metrics?: { label: string; value: string; color: string }[];
-}
+import { useAIChat } from '@/lib/hooks';
 
 const CONTEXT_CAPABILITIES = [
   { label: 'Analyse de charge', desc: 'Déterminer si un agent ou un service est surchargé de requêtes.' },
@@ -28,97 +17,79 @@ const CONTEXT_CAPABILITIES = [
 
 const PRESETS = [
   'Quels agents sont actuellement surchargés ?',
-  'Analyse la performance de Eric Tamba',
+  'Analyse la performance globale de traitement',
   'Quelles sont les réclamations de notes critiques ?',
   'Rédige un e-mail de relance pour la scolarité',
 ];
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: 'msg-1',
-    sender: 'ai',
-    text: 'Bonjour Administrateur. Je suis l\'Assistant IA intégré d\'IUC Requêtes. Je suis connecté en temps réel aux données de l\'établissement, aux profils étudiants, aux plannings et au personnel. Que puis-je analyser pour vous aujourd\'hui ?',
-    timestamp: '18:00',
-    suggestions: [
-      'Analyser les goulots d\'étranglement Scolarité',
-      'Identifier les requêtes en retard critique',
-      'Faire un bilan de satisfaction global'
-    ]
-  }
-];
+// Rendu Markdown personnalisé
+function parseInline(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code class="bg-slate-200/80 px-1 py-0.5 rounded text-[11px] font-mono text-indigo-700">$1</code>');
+}
 
-/* ═══════════════════════ COMPOSANT ═══════════════════════ */
+function MarkdownText({ text }: { text: string }) {
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return (
+    <div className="space-y-2">
+      {parts.map((part, index) => {
+        if (part.startsWith('```')) {
+          const match = part.match(/```(\w*)\n([\s\S]*?)```/);
+          const code = match ? match[2] : part.slice(3, -3);
+          return (
+            <pre key={index} className="bg-slate-900 text-slate-100 p-3 rounded-lg overflow-x-auto text-[10px] font-mono leading-relaxed border border-slate-800 my-2">
+              <code>{code.trim()}</code>
+            </pre>
+          );
+        }
+
+        const lines = part.split('\n');
+        return (
+          <div key={index} className="space-y-1">
+            {lines.map((line, lineIdx) => {
+              if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
+                const cleanText = line.replace(/^\s*[\*\-]\s+/, '');
+                return (
+                  <ul key={lineIdx} className="list-disc list-inside ml-2">
+                    <li className="inline" dangerouslySetInnerHTML={{ __html: parseInline(cleanText) }} />
+                  </ul>
+                );
+              }
+              const oListMatch = line.trim().match(/^\d+\.\s+(.*)/);
+              if (oListMatch) {
+                return (
+                  <ol key={lineIdx} className="list-decimal list-inside ml-2">
+                    <li className="inline" dangerouslySetInnerHTML={{ __html: parseInline(oListMatch[1]) }} />
+                  </ol>
+                );
+              }
+              return (
+                <p key={lineIdx} className="min-h-[1em]" dangerouslySetInnerHTML={{ __html: parseInline(line) }} />
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function AdminAssistantIaPage() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const { messages, sendMessage, regenerate, clearHistory, isLoading } = useAIChat();
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [activeModel, setActiveModel] = useState('Gemini 1.5 Pro');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, [messages, isLoading]);
 
-  /* Simulation de l&apos;IA avec réponses contextuelles */
   const handleSend = (textToSend: string) => {
-    if (!textToSend.trim()) return;
-
-    const userMsg: Message = {
-      id: `msg-${Date.now()}`,
-      sender: 'user',
-      text: textToSend,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
+    if (!textToSend.trim() || isLoading) return;
+    sendMessage(textToSend, activeModel === 'Gemini 1.5 Pro' ? 'gemini-1.5-pro' : 'gemini-1.5-flash');
     setInput('');
-    setIsTyping(true);
-
-    // Simulation du temps de calcul
-    setTimeout(() => {
-      let responseText = "Je comprends votre requête. Je suis en train d'analyser la base de données d'IUC Requêtes pour formuler une réponse précise.";
-      let suggestions: string[] = [];
-      let metrics: { label: string; value: string; color: string }[] = [];
-
-      const normalized = textToSend.toLowerCase();
-
-      if (normalized.includes('charge') || normalized.includes('surchargé')) {
-        responseText = "Après analyse des dossiers en cours par agent, j'ai détecté un déséquilibre de charge. \n\n**M. TAMBA Eric** gère actuellement **12 dossiers actifs** (dont 4 réclamations prioritaires) alors que la moyenne de l'équipe est de 8. **Mme FOUDA Martine** dispose quant à elle d'une charge plus faible (8 dossiers en cours) avec un taux de résolution de 100% ce mois-ci.";
-        metrics = [
-          { label: 'TAMBA Eric', value: '12 actifs (Élevé)', color: 'text-red-600 bg-red-50 border-red-100' },
-          { label: 'FOUDA Martine', value: '8 actifs (Normal)', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-          { label: 'Optimisation suggérée', value: 'Transfert de 2 dossiers', color: 'text-violet-600 bg-violet-50 border-violet-100' }
-        ];
-        suggestions = ['Réassigner 2 dossiers de Eric à Martine', 'Voir le profil de Eric Tamba'];
-      } else if (normalized.includes('performance') || normalized.includes('tamba')) {
-        responseText = "Voici le profil analytique de l'agent **TAMBA Eric** (Scolarité) :\n\n* **Efficacité** : Excellent taux de résolution global (**92%**).\n* **Vitesse** : Temps de traitement moyen de **1.8 jours** (inférieur à la moyenne du service de 2.2 jours).\n* **Satisfaction** : Note moyenne de **4.8/5** sur 124 retours d'étudiants.\n* **Point de vigilance** : Une augmentation de sa charge de travail a été constatée ces 5 derniers jours.";
-        metrics = [
-          { label: 'Respect SLA', value: '92%', color: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
-          { label: 'Satisfaction', value: '4.8/5', color: 'text-amber-600 bg-amber-50 border-amber-100' },
-          { label: 'Temps moyen', value: '1.8j', color: 'text-indigo-600 bg-indigo-50 border-indigo-100' }
-        ];
-        suggestions = ['Analyser les catégories de Eric Tamba', 'Rédiger une évaluation annuelle'];
-      } else if (normalized.includes('retard') || normalized.includes('critique') || normalized.includes('sla')) {
-        responseText = "J'ai identifié **4 requêtes critiques** en dépassement ou proche du dépassement de la limite de temps de traitement (48h) :\n\n1. **REQ-1248** (Réclamation de note - NGUENOU Wilfried) : Assignée à Eric Tamba, en attente d'une validation du chef de département pédagogique depuis 36h.\n2. **REQ-1260** (Correction de relevé - TCHOUTA Marc) : Non assignée, en attente depuis 28h.\n3. **REQ-1089** (Problème de paiement - DJOMO Grace) : Assignée à Rachel Ayissi (Finance), en attente d'une pièce comptable depuis 44h.";
-        suggestions = ['Assigner REQ-1260 immédiatement', 'Notifier les agents en retard'];
-      } else if (normalized.includes('e-mail') || normalized.includes('rédige')) {
-        responseText = "Voici une proposition d'e-mail de relance automatique pour le service Scolarité :\n\n```text\nObjet : Relance urgente - Dossier en attente de validation pédagogique\n\nBonjour M. le Responsable Pédagogique,\n\nNous vous relançons concernant le traitement de la réclamation de note #REQ-1248 soumise par l'étudiant NGUENOU Wilfried.\n\nCe dossier est en attente de votre avis académique depuis 36h, approchant de la limite critique de notre engagement SLA (48h).\n\nMerci de valider ou rejeter la correction proposée directement via votre espace.\n\nCordialement,\nLe Secrétariat Académique IUC\n```";
-        suggestions = ['Envoyer cet e-mail', 'Modifier le brouillon'];
-      }
-
-      const aiMsg: Message = {
-        id: `msg-${Date.now() + 1}`,
-        sender: 'ai',
-        text: responseText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        suggestions: suggestions.length > 0 ? suggestions : undefined,
-        metrics: metrics.length > 0 ? metrics : undefined,
-      };
-
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1500);
   };
 
   return (
@@ -127,6 +98,9 @@ export default function AdminAssistantIaPage() {
       {/* ── En-tête ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3">
+          <Link href="/admin" className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors">
+            <ArrowLeft size={16} />
+          </Link>
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
             <Brain size={20} />
           </div>
@@ -151,8 +125,14 @@ export default function AdminAssistantIaPage() {
               </button>
             ))}
           </div>
+          <button 
+            onClick={clearHistory}
+            className="text-[10px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-200 transition-colors"
+          >
+            Effacer
+          </button>
           <span className="text-[10px] font-mono font-bold bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-xl flex items-center gap-1 shrink-0">
-            <Zap size={11} /> 78% crédits restants
+            <Zap size={11} /> 100% crédits
           </span>
         </div>
       </div>
@@ -180,20 +160,22 @@ export default function AdminAssistantIaPage() {
                 </div>
 
                 {/* Bulle de texte */}
-                <div className="space-y-2">
+                <div className="space-y-2 max-w-full">
                   <div className={`rounded-2xl p-3.5 text-xs leading-relaxed ${
                     msg.sender === 'user'
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                      : 'bg-slate-50 text-slate-800 border border-slate-100 whitespace-pre-line'
+                      : msg.error 
+                        ? 'bg-red-50 text-red-800 border border-red-100'
+                        : 'bg-slate-50 text-slate-800 border border-slate-100'
                   }`}>
-                    {msg.text}
+                    {msg.sender === 'user' ? msg.text : <MarkdownText text={msg.text} />}
                   </div>
 
                   {/* Badges métriques IA */}
-                  {msg.metrics && (
+                  {msg.metrics && msg.metrics.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1.5">
                       {msg.metrics.map(met => (
-                        <div key={met.label} className={`p-2.5 rounded-xl border text-[11px] font-bold ${met.color}`}>
+                        <div key={met.label} className={`p-2.5 rounded-xl border text-[11px] font-bold ${met.color || 'bg-slate-50 text-slate-700 border-slate-100'}`}>
                           <p className="opacity-60">{met.label}</p>
                           <p className="text-xs font-black mt-0.5">{met.value}</p>
                         </div>
@@ -202,7 +184,7 @@ export default function AdminAssistantIaPage() {
                   )}
 
                   {/* Suggestions de réponses IA */}
-                  {msg.suggestions && (
+                  {msg.suggestions && msg.suggestions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1.5">
                       {msg.suggestions.map(sug => (
                         <button
@@ -224,8 +206,8 @@ export default function AdminAssistantIaPage() {
               </div>
             ))}
 
-            {/* Effet d&apos;écriture de l&apos;IA */}
-            {isTyping && (
+            {/* Effet d'écriture de l'IA */}
+            {isLoading && (
               <div className="flex gap-3 max-w-[80%]">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
                   <Brain size={13} />
@@ -251,11 +233,11 @@ export default function AdminAssistantIaPage() {
                 onChange={e => setInput(e.target.value)}
                 placeholder="Posez une question sur le personnel, la scolarité, les retards SLA..."
                 className="flex-1 outline-none text-xs text-slate-700 bg-transparent py-1.5"
-                disabled={isTyping}
+                disabled={isLoading}
               />
               <button
                 type="submit"
-                disabled={!input.trim() || isTyping}
+                disabled={!input.trim() || isLoading}
                 className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 text-white w-8 h-8 rounded-xl flex items-center justify-center transition-colors shrink-0 disabled:cursor-not-allowed cursor-pointer shadow-sm shadow-indigo-600/10"
               >
                 <Send size={13} />
@@ -276,10 +258,14 @@ export default function AdminAssistantIaPage() {
               </span>
             </div>
             <p className="text-[11px] text-slate-400 leading-normal">
-              L&apos;IA est synchronisée avec la base de données PostgreSQL d&apos;IUC (dernière indexation il y a 2 heures).
+              L&apos;IA est synchronisée avec la base de données PostgreSQL d&apos;IUC (connexion directe en temps réel).
             </p>
-            <button className="w-full flex items-center justify-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-[11px] font-bold text-slate-600 py-2 rounded-xl transition-all shadow-sm">
-              <RefreshCw size={11} /> Re-synchroniser
+            <button 
+              onClick={() => regenerate(activeModel === 'Gemini 1.5 Pro' ? 'gemini-1.5-pro' : 'gemini-1.5-flash')}
+              className="w-full flex items-center justify-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-[11px] font-bold text-slate-600 py-2 rounded-xl transition-all shadow-sm"
+              disabled={isLoading}
+            >
+              <RefreshCw size={11} className={isLoading ? 'animate-spin' : ''} /> Régénérer la réponse
             </button>
           </div>
 
@@ -295,7 +281,7 @@ export default function AdminAssistantIaPage() {
                   key={preset}
                   onClick={() => handleSend(preset)}
                   className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/20 text-xs text-slate-600 font-semibold transition-all group flex items-start gap-2 justify-between"
-                  disabled={isTyping}
+                  disabled={isLoading}
                 >
                   <span className="group-hover:text-indigo-700 truncate">{preset}</span>
                   <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 text-indigo-600 shrink-0 mt-0.5 transition-opacity" />
@@ -304,7 +290,7 @@ export default function AdminAssistantIaPage() {
             </div>
           </div>
 
-          {/* Capacités de l&apos;assistant */}
+          {/* Capacités de l'assistant */}
           <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-3">
             <h4 className="font-bold text-slate-800 text-xs uppercase tracking-wide">Compétences de l&apos;IA</h4>
             <div className="space-y-3 pt-1">

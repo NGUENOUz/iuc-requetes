@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, getSupabaseClient } from '@/lib/supabase';
 import { successResponse, errorResponse, handleError, ErrorCodes } from '@/lib/utils/api.utils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -14,11 +14,15 @@ export async function GET(request: NextRequest) {
     const dateFrom = searchParams.get('date_from');
     const dateTo = searchParams.get('date_to');
 
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
     // Statistiques globales
     const statsPromises = [];
 
     // Total de requêtes
-    let requestsQuery = supabase
+    let requestsQuery = client
       .from('requests')
       .select('id', { count: 'exact', head: true });
 
@@ -30,7 +34,7 @@ export async function GET(request: NextRequest) {
     statsPromises.push(requestsQuery);
 
     // Requêtes par statut
-    const { data: statusData } = await supabase
+    const { data: statusData } = await client
       .from('requests')
       .select('status_id, request_statuses(name, color)');
 
@@ -48,7 +52,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Requêtes par priorité
-    const { data: priorityData } = await supabase
+    const { data: priorityData } = await client
       .from('requests')
       .select('priority_id, priorities(name, color, level)');
 
@@ -66,19 +70,19 @@ export async function GET(request: NextRequest) {
     });
 
     // Requêtes résolues
-    const { data: resolvedRequests, count: resolvedCount } = await supabase
+    const { data: resolvedRequests, count: resolvedCount } = await client
       .from('requests')
       .select('*', { count: 'exact' })
       .not('resolved_at', 'is', null);
 
     // SLA breaches
-    const { count: slaBreachCount } = await supabase
+    const { count: slaBreachCount } = await client
       .from('requests')
       .select('*', { count: 'exact', head: true })
       .eq('is_sla_breached', true);
 
     // Temps moyen de résolution
-    const { data: resolvedRequestsWithTime } = await supabase
+    const { data: resolvedRequestsWithTime } = await client
       .from('requests')
       .select('resolution_time_hours')
       .not('resolution_time_hours', 'is', null);
@@ -88,7 +92,7 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Note de satisfaction moyenne
-    const { data: ratings } = await supabase
+    const { data: ratings } = await client
       .from('request_ratings')
       .select('rating');
 
@@ -97,7 +101,7 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Top agents (par nombre de requêtes résolues)
-    const { data: topAgents } = await supabase
+    const { data: topAgents } = await client
       .from('requests')
       .select(`
         assigned_to,
@@ -125,7 +129,7 @@ export async function GET(request: NextRequest) {
       .slice(0, 5);
 
     // Requêtes par service
-    const { data: serviceStats } = await supabase
+    const { data: serviceStats } = await client
       .from('requests')
       .select(`
         service_id,
@@ -162,3 +166,4 @@ export async function GET(request: NextRequest) {
     return handleError(error);
   }
 }
+

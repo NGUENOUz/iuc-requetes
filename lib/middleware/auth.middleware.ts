@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { errorResponse, ErrorCodes } from '@/lib/utils/api.utils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -15,7 +15,7 @@ export interface AuthenticatedUser {
   role: {
     id: string;
     name: string;
-    permissions: string[];
+    description?: string;
   };
   service_id?: string;
   is_active: boolean;
@@ -26,40 +26,59 @@ export async function getUserFromRequest(request: NextRequest): Promise<Authenti
   try {
     const authHeader = request.headers.get('authorization');
     
+    console.log('[Auth Middleware] Auth header:', authHeader ? 'Present' : 'Missing');
+    
     if (!authHeader?.startsWith('Bearer ')) {
+      console.log('[Auth Middleware] No Bearer token found');
       return null;
     }
 
     const token = authHeader.substring(7);
+    console.log('[Auth Middleware] Token extracted, length:', token.length);
     
-    // Vérifier le token avec Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    // Vérifier le token avec Supabase Admin
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
     
-    if (error || !user) {
+    if (error) {
+      console.error('[Auth Middleware] Supabase auth error:', error);
+      return null;
+    }
+    
+    if (!user) {
+      console.log('[Auth Middleware] No user found for token');
       return null;
     }
 
+    console.log('[Auth Middleware] User authenticated:', user.id);
+
     // Récupérer les infos complètes de l'utilisateur
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select(`
         *,
         role:roles(
           id,
           name,
-          permissions
+          description
         )
       `)
       .eq('auth_user_id', user.id)
       .single();
 
-    if (userError || !userData) {
+    if (userError) {
+      console.error('[Auth Middleware] User data error:', userError);
+      return null;
+    }
+    
+    if (!userData) {
+      console.log('[Auth Middleware] No user data found');
       return null;
     }
 
+    console.log('[Auth Middleware] User data retrieved:', userData.id, userData.email);
     return userData as AuthenticatedUser;
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    console.error('[Auth Middleware] Unexpected error:', error);
     return null;
   }
 }

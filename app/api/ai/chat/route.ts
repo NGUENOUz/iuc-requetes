@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { generateContent, extractJSON, isGeminiAvailable, MODELS } from '@/lib/gemini';
 import { successResponse, errorResponse, handleError, parseRequestBody, ErrorCodes } from '@/lib/utils/api.utils';
+import { requireAuth } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/ai/chat - Chat avec l'assistant IA
@@ -12,15 +13,24 @@ export async function POST(request: NextRequest) {
   
   try {
     // Authentification
-    const { data: { user } } = await supabase.auth.getUser();
+    const { error: authError, user: authUser } = await requireAuth(request);
     
-    if (!user) {
-      return errorResponse(
+    if (authError || !authUser) {
+      return authError || errorResponse(
         'Non authentifié',
         ErrorCodes.UNAUTHORIZED,
         401
       );
     }
+
+    if (!['admin', 'chef_service', 'agent'].includes(authUser.role?.name)) {
+      return errorResponse(
+        'Accès réservé aux administrateurs et agents',
+        ErrorCodes.FORBIDDEN,
+        403
+      );
+    }
+
 
     console.log('[1/5] 📥 Parsing body...');
     const body = await parseRequestBody(request);
@@ -139,28 +149,28 @@ Réponds UNIQUEMENT en JSON, sans markdown.`;
 
 async function getDatabaseContext() {
   try {
-    // Statistiques globales
-    const { count: totalRequests } = await supabase
+    // Statistiques globales — utilise supabaseAdmin pour contourner RLS
+    const { count: totalRequests } = await supabaseAdmin
       .from('requests')
       .select('*', { count: 'exact', head: true });
 
-    const { count: pendingRequests } = await supabase
+    const { count: pendingRequests } = await supabaseAdmin
       .from('requests')
       .select('*', { count: 'exact', head: true })
       .in('status_id', await getPendingStatusIds());
 
-    const { count: slaBreaches } = await supabase
+    const { count: slaBreaches } = await supabaseAdmin
       .from('requests')
       .select('*', { count: 'exact', head: true })
       .eq('is_sla_breached', true);
 
-    const { count: activeAgents } = await supabase
+    const { count: activeAgents } = await supabaseAdmin
       .from('users')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
       .neq('role_id', await getStudentRoleId());
 
-    const { data: services } = await supabase
+    const { data: services } = await supabaseAdmin
       .from('services')
       .select('name')
       .eq('is_active', true);
@@ -169,7 +179,7 @@ async function getDatabaseContext() {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const { data: recentRequests } = await supabase
+    const { data: recentRequests } = await supabaseAdmin
       .from('requests')
       .select('*, category:request_categories(name), priority:priorities(name)')
       .gte('submitted_at', yesterday.toISOString())
@@ -202,7 +212,7 @@ async function getDatabaseContext() {
 }
 
 async function getPendingStatusIds(): Promise<string[]> {
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('request_statuses')
     .select('id')
     .in('name', ['Soumise', 'En attente', 'Assignée', 'En cours']);
@@ -211,7 +221,7 @@ async function getPendingStatusIds(): Promise<string[]> {
 }
 
 async function getStudentRoleId(): Promise<string> {
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('roles')
     .select('id')
     .eq('name', 'etudiant')

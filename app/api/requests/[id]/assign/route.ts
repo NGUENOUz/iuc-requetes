@@ -16,9 +16,10 @@ import { requireRole } from '@/lib/middleware/auth.middleware';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Seuls les admins, chefs de service et agents peuvent assigner
     const { error: authError, user } = await requireRole(request, ['admin', 'chef_service', 'agent']);
     if (authError) return authError;
@@ -30,7 +31,7 @@ export async function POST(
     const { data: existingRequest } = await supabaseAdmin
       .from('requests')
       .select('*, student:users!requests_student_id_fkey(first_name, last_name)')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!existingRequest) {
@@ -88,7 +89,7 @@ export async function POST(
         assigned_at: new Date().toISOString(),
         status_id: assignedStatus?.id || existingRequest.status_id,
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select(`
         *,
         student:users!requests_student_id_fkey(id, first_name, last_name, email),
@@ -112,7 +113,7 @@ export async function POST(
     await supabaseAdmin
       .from('request_history')
       .insert({
-        request_id: params.id,
+        request_id: id,
         user_id: validatedData.assigned_to,
         action: 'request_assigned',
         new_value: validatedData.assigned_to,
@@ -127,7 +128,7 @@ export async function POST(
         type: 'request_assigned',
         title: 'Nouvelle requête assignée',
         message: `La requête "${existingRequest.title}" vous a été assignée`,
-        link: `/admin/requetes/${params.id}`,
+        link: `/admin/requetes/${id}`,
       });
 
     // Notifier l'étudiant
@@ -138,7 +139,7 @@ export async function POST(
         type: 'request_assigned',
         title: 'Requête prise en charge',
         message: `Votre requête a été assignée à ${agent.first_name} ${agent.last_name}`,
-        link: `/dashboard/requetes/${params.id}`,
+        link: `/dashboard/requetes/${id}`,
       });
 
     return successResponse(updatedRequest);

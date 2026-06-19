@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase, supabaseAdmin, getSupabaseClient } from '@/lib/supabase';
 import { createRequestSchema, filterRequestsSchema } from '@/lib/schemas';
 import { 
   successResponse, 
@@ -21,18 +21,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const { page, limit, offset } = getPaginationParams(searchParams);
 
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
     // Construire les filtres
     const filters: any = {};
     
     if (searchParams.get('status_id')) filters.status_id = searchParams.get('status_id');
     if (searchParams.get('category_id')) filters.category_id = searchParams.get('category_id');
     if (searchParams.get('priority_id')) filters.priority_id = searchParams.get('priority_id');
-    if (searchParams.get('assigned_to')) filters.assigned_to = searchParams.get('assigned_to');
     if (searchParams.get('service_id')) filters.service_id = searchParams.get('service_id');
     if (searchParams.get('student_id')) filters.student_id = searchParams.get('student_id');
+    
+    // Gestion spéciale pour assigned_to
+    const assignedToParam = searchParams.get('assigned_to');
+    if (assignedToParam === 'null') {
+      // Filtre pour les requêtes non assignées
+      filters.assigned_to_is_null = true;
+    } else if (assignedToParam) {
+      filters.assigned_to = assignedToParam;
+    }
 
     // Construire la requête
-    let query = supabase
+    let query = client
       .from('requests')
       .select(`
         *,
@@ -44,9 +56,14 @@ export async function GET(request: NextRequest) {
         service:services(*)
       `, { count: 'exact' });
 
+
     // Appliquer les filtres
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) query = query.eq(key, value);
+      if (key === 'assigned_to_is_null') {
+        query = query.is('assigned_to', null);
+      } else if (value) {
+        query = query.eq(key, value);
+      }
     });
 
     // Recherche textuelle

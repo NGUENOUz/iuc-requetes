@@ -93,8 +93,8 @@ export default function LoginPage() {
       console.log('[Frontend] Role name:', role);
       console.log('[Frontend] Role after lowercase:', role?.toLowerCase());
       
-      if (role?.toLowerCase() === 'admin') {
-        console.log('[Frontend] Redirecting admin to /admin');
+      if (role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'agent') {
+        console.log('[Frontend] Redirecting admin/agent to /admin');
         router.push('/admin');
       } else if (role?.toLowerCase() === 'etudiant') {
         console.log('[Frontend] Redirecting etudiant to /dashboard');

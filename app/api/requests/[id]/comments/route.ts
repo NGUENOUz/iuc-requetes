@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase, supabaseAdmin, getSupabaseClient } from '@/lib/supabase';
 import { createCommentSchema } from '@/lib/schemas';
 import { 
   successResponse, 
@@ -16,15 +16,16 @@ import { requireAuth, canAccessRequest } from '@/lib/middleware/auth.middleware'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Vérifier l'authentification
     const { error: authError, user: userData } = await requireAuth(request);
     if (authError) return authError;
 
     // Vérifier l'accès à la requête
-    const hasAccess = await canAccessRequest(userData!, params.id);
+    const hasAccess = await canAccessRequest(userData!, id);
     if (!hasAccess) {
       return errorResponse(
         'Vous n\'avez pas accès à cette requête',
@@ -33,11 +34,15 @@ export async function POST(
       );
     }
 
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
     // Vérifier que la requête existe
-    const { data: existingRequest } = await supabase
+    const { data: existingRequest } = await client
       .from('requests')
       .select('id, student_id, assigned_to, title')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!existingRequest) {
@@ -52,14 +57,14 @@ export async function POST(
     const body = await parseRequestBody(request);
     const validatedData = createCommentSchema.parse({
       ...body,
-      request_id: params.id,
+      request_id: id,
     });
 
     // Créer le commentaire
     const { data: newComment, error: createError } = await supabaseAdmin
       .from('request_comments')
       .insert({
-        request_id: params.id,
+        request_id: id,
         user_id: userData!.id,
         content: validatedData.content,
         is_internal: validatedData.is_internal,
@@ -83,7 +88,7 @@ export async function POST(
     await supabaseAdmin
       .from('request_history')
       .insert({
-        request_id: params.id,
+        request_id: id,
         user_id: userData!.id,
         action: 'comment_added',
         description: `Commentaire ajouté par ${userData!.first_name} ${userData!.last_name}`,
@@ -99,7 +104,7 @@ export async function POST(
         type: 'comment_added',
         title: 'Nouveau commentaire',
         message: `Un commentaire a été ajouté à votre requête "${existingRequest.title}"`,
-        link: `/dashboard/requetes/${params.id}`,
+        link: `/dashboard/requetes/${id}`,
       });
     }
 
@@ -110,7 +115,7 @@ export async function POST(
         type: 'comment_added',
         title: 'Nouveau commentaire',
         message: `Un commentaire a été ajouté à la requête "${existingRequest.title}"`,
-        link: `/admin/requetes/${params.id}`,
+        link: `/admin/requetes/${id}`,
       });
     }
 
@@ -131,16 +136,21 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { data, error } = await supabase
+    const { id } = await params;
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
+    const { data, error } = await client
       .from('request_comments')
       .select(`
         *,
         user:users(id, first_name, last_name, email, avatar_url, role:roles(name))
       `)
-      .eq('request_id', params.id)
+      .eq('request_id', id)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -158,3 +168,4 @@ export async function GET(
     return handleError(error);
   }
 }
+

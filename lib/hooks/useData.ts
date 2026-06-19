@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, Request, Notification } from '@/lib/types';
 import { useAuthStore } from '@/lib/store/auth.store';
+import { supabase } from '@/lib/supabase';
 
 // ═══════════════════════════════════════════════════════════════
 // USER HOOKS
@@ -47,8 +48,14 @@ export function useRequests() {
 export function useRequest(id: string) {
   return useQuery({
     queryKey: ['request', id],
-    queryFn: async (): Promise<Request> => {
-      const response = await fetch(`/api/requests/${id}`);
+    queryFn: async (): Promise<any> => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch(`/api/requests/${id}`, { headers });
       if (!response.ok) throw new Error('Requête non trouvée');
       const data = await response.json();
       return data.data;

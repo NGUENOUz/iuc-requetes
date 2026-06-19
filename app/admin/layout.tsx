@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/lib/store/auth.store';
+import { RouteGuard } from '@/components/RouteGuard';
+
 import {
   LayoutDashboard,
   FileText,
@@ -42,7 +46,8 @@ interface NavSection {
   items: NavItem[];
 }
 
-const navSections: NavSection[] = [
+// Navigation pour admin
+const adminNavSections: NavSection[] = [
   {
     label: 'GESTION',
     items: [
@@ -75,13 +80,57 @@ const navSections: NavSection[] = [
   },
 ];
 
+// Navigation pour agent
+const agentNavSections: NavSection[] = [
+  {
+    label: 'MON ESPACE',
+    items: [
+      { href: '/admin', label: 'Tableau de bord', icon: LayoutDashboard },
+      { href: '/admin/requetes', label: 'Requêtes', icon: FileText, badge: 24 },
+    ],
+  },
+  {
+    label: 'STATISTIQUES',
+    items: [
+      { href: '/admin/statistiques', label: 'Mes statistiques', icon: BarChart2 },
+    ],
+  },
+  {
+    label: 'IA & ASSISTANCE',
+    items: [
+      { href: '/admin/assistant-ia', label: 'Assistant IA', icon: Brain, isNew: true },
+      { href: '/admin/suggestions-ia', label: 'Suggestions IA', icon: Lightbulb },
+    ],
+  },
+];
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuthStore();
+  
+  // Déterminer la navigation selon le rôle
+  const isAdmin = user?.role?.name === 'admin';
+  const isAgent = user?.role?.name === 'agent';
+  const navSections = isAdmin ? adminNavSections : agentNavSections;
+  
+  // Titre du panel
+  const panelTitle = isAdmin ? 'Panel Admin' : 'Espace Agent';
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/login');
+    } catch (err) {
+      console.error('Error logging out:', err);
+    }
+  };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background font-sans">
+    <RouteGuard allowedRoles={['admin', 'agent']}>
+      <div className="flex h-screen overflow-hidden bg-background font-sans">
 
       {/* ─── Overlay mobile ─── */}
       {sidebarOpen && (
@@ -111,7 +160,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="font-extrabold text-base leading-tight truncate text-white">IUC Requêtes</p>
-              <p className="text-emerald-500/80 text-[11px] font-semibold">Panel Admin</p>
+              <p className="text-emerald-500/80 text-[11px] font-semibold">{panelTitle}</p>
             </div>
           )}
           {/* Bouton réduction sidebar */}
@@ -185,8 +234,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* ── Déconnexion ── */}
         <div className={`p-3 border-t border-emerald-950/40 ${collapsed ? 'flex justify-center' : ''}`}>
           <button
+            onClick={handleLogout}
             title={collapsed ? 'Déconnexion' : undefined}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/[0.03] hover:text-white transition-colors text-sm font-medium ${collapsed ? 'justify-center w-10' : 'w-full'}`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/[0.03] hover:text-white transition-colors text-sm font-medium ${collapsed ? 'justify-center w-10' : 'w-full'} cursor-pointer`}
           >
             <LogOut size={18} className="shrink-0" />
             {!collapsed && <span>Déconnexion</span>}
@@ -243,8 +293,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <UserCog size={15} className="text-white" />
               </div>
               <div className="hidden sm:block text-left leading-tight">
-                <p className="text-xs font-bold text-slate-900">Administrateur</p>
-                <p className="text-[10px] text-slate-400 font-medium">Super Admin</p>
+                <p className="text-xs font-bold text-slate-900">
+                  {user ? `${user.first_name} ${user.last_name}` : 'Utilisateur'}
+                </p>
+                <p className="text-[10px] text-slate-400 font-medium">
+                  {isAdmin ? 'Administrateur' : isAgent ? 'Agent' : user?.role?.name || 'Rôle'}
+                </p>
               </div>
               <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
             </div>
@@ -256,6 +310,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
       </div>
-    </div>
+    </RouteGuard>
   );
 }

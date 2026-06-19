@@ -14,6 +14,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Client Supabase pour le client-side
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Obtenir un client Supabase avec le token utilisateur pour appliquer les politiques RLS
+export function getSupabaseClient(token?: string) {
+  if (!token) return supabase;
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
+}
+
 // Client Supabase pour le server-side (avec service role key)
 export const supabaseAdmin = createClient(
   supabaseUrl,
@@ -25,3 +41,4 @@ export const supabaseAdmin = createClient(
     }
   }
 );
+

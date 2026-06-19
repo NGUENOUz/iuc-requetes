@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { generateContent, extractJSON, isGeminiAvailable, MODELS } from '@/lib/gemini';
 import { successResponse, errorResponse, handleError, ErrorCodes } from '@/lib/utils/api.utils';
+import { requireAuth } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/ai/suggest - Générer des suggestions IA automatiques
@@ -12,24 +13,17 @@ export async function POST(request: NextRequest) {
   
   try {
     console.log('[1/4] 🔐 Vérification auth...');
-    const { data: { user } } = await supabase.auth.getUser();
+    const { error: authError, user: authUser } = await requireAuth(request);
     
-    if (!user) {
-      return errorResponse(
+    if (authError || !authUser) {
+      return authError || errorResponse(
         'Non authentifié',
         ErrorCodes.UNAUTHORIZED,
         401
       );
     }
 
-    // Vérifier si c'est un admin
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role:roles(name)')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (userData?.role?.name !== 'admin') {
+    if (authUser.role?.name !== 'admin') {
       return errorResponse(
         'Accès réservé aux administrateurs',
         ErrorCodes.FORBIDDEN,
@@ -38,6 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[2/4] ✅ Admin authentifié');
+
 
     // Vérifier si Gemini est disponible
     if (!isGeminiAvailable()) {

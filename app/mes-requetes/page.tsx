@@ -17,7 +17,12 @@ const statutStyle: Record<string, string> = {
   'En cours': 'bg-yellow-100 text-yellow-700 border-yellow-200',
   'Résolue': 'bg-emerald-100 text-emerald-700 border-emerald-200',
   'Rejetée': 'bg-red-100 text-red-700 border-red-200',
-  'Soumise': 'bg-slate-100 text-slate-700 border-slate-200',
+};
+
+const prioriteStyle: Record<string, string> = {
+  'Basse': 'bg-gray-100 text-gray-700',
+  'Moyenne': 'bg-yellow-100 text-yellow-700',
+  'Haute': 'bg-red-100 text-red-700',
 };
 
 const PAGE_SIZE = 10;
@@ -204,29 +209,25 @@ function MesRequetesContent() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-bold text-slate-900">{r.titre}</h3>
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${statutStyle[r.statut]}`}>
-                              {r.statut}
+                            <h3 className="text-sm font-bold text-slate-900">{r.title}</h3>
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${statutStyle[r.status.name]}`}>
+                              {r.status.name}
+                            </span>
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${prioriteStyle[r.priority.name]}`}>
+                              {r.priority.name}
                             </span>
                           </div>
                           <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                            <span className="font-mono">#{r.id}</span>
+                            <span className="font-mono">{r.reference}</span>
                             <span>•</span>
                             <span className="flex items-center gap-1">
                               <Calendar size={11} />
-                              {r.date}
+                              {formatDate(r.submitted_at)}
                             </span>
                             <span>•</span>
-                            <span className="bg-slate-100 px-2 py-0.5 rounded">{r.categorie}</span>
+                            <span className="bg-slate-100 px-2 py-0.5 rounded">{r.category.name}</span>
                           </div>
-                          {r.reponse && (
-                            <div className="mt-2 bg-blue-50 border border-blue-100 rounded-lg p-2.5">
-                              <p className="text-xs text-blue-800 flex items-start gap-2">
-                                <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                                <span>{r.reponse}</span>
-                              </p>
-                            </div>
-                          )}
+                          <p className="text-xs text-slate-600 mt-2 line-clamp-2">{r.description}</p>
                         </div>
                       </div>
                     </div>

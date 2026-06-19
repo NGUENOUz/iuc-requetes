@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase, supabaseAdmin, getSupabaseClient } from '@/lib/supabase';
 import { updateRequestSchema } from '@/lib/schemas';
 import { 
   successResponse, 
@@ -16,10 +16,15 @@ import { requireAuth, canAccessRequest } from '@/lib/middleware/auth.middleware'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { data, error } = await supabase
+    const { id } = await params;
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
+    const { data, error } = await client
       .from('requests')
       .select(`
         *,
@@ -45,7 +50,7 @@ export async function GET(
         ),
         rating:request_ratings(*)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error || !data) {
@@ -69,15 +74,17 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Vérifier l'authentification
     const { error: authError, user } = await requireAuth(request);
     if (authError) return authError;
 
     // Vérifier l'accès à la requête
-    const hasAccess = await canAccessRequest(user!, params.id);
+    const hasAccess = await canAccessRequest(user!, id);
     if (!hasAccess) {
       return errorResponse(
         'Vous n\'avez pas accès à cette requête',
@@ -86,11 +93,15 @@ export async function PATCH(
       );
     }
 
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
     // Vérifier que la requête existe
-    const { data: existingRequest, error: fetchError } = await supabase
+    const { data: existingRequest, error: fetchError } = await client
       .from('requests')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (fetchError || !existingRequest) {
@@ -109,7 +120,7 @@ export async function PATCH(
     const { data: updatedRequest, error: updateError } = await supabaseAdmin
       .from('requests')
       .update(validatedData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select(`
         *,
         student:users!requests_student_id_fkey(id, first_name, last_name, email),
@@ -134,7 +145,7 @@ export async function PATCH(
     await supabaseAdmin
       .from('request_history')
       .insert({
-        request_id: params.id,
+        request_id: id,
         user_id: user!.id,
         action: 'request_updated',
         description: 'Requête mise à jour',
@@ -153,15 +164,17 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Vérifier l'authentification
     const { error: authError, user } = await requireAuth(request);
     if (authError) return authError;
 
     // Vérifier l'accès à la requête
-    const hasAccess = await canAccessRequest(user!, params.id);
+    const hasAccess = await canAccessRequest(user!, id);
     if (!hasAccess) {
       return errorResponse(
         'Vous n\'avez pas accès à cette requête',
@@ -170,11 +183,15 @@ export async function DELETE(
       );
     }
 
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    const client = getSupabaseClient(token);
+
     // Vérifier que la requête existe
-    const { data: existingRequest } = await supabase
+    const { data: existingRequest } = await client
       .from('requests')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (!existingRequest) {
@@ -189,7 +206,7 @@ export async function DELETE(
     const { error: deleteError } = await supabaseAdmin
       .from('requests')
       .delete()
-      .eq('id', params.id);
+      .eq('id', id);
 
     if (deleteError) {
       return errorResponse(
@@ -207,7 +224,7 @@ export async function DELETE(
         user_id: user!.id,
         action: 'request_deleted',
         entity_type: 'request',
-        entity_id: params.id,
+        entity_id: id,
         description: `Requête ${existingRequest.reference} supprimée`,
       });
 
@@ -217,3 +234,5 @@ export async function DELETE(
     return handleError(error);
   }
 }
+
+

@@ -21,8 +21,8 @@ export default function LoginPage() {
     const role = roleName?.toLowerCase().trim();
     console.log('[Frontend] role after processing:', role);
     
-    // Si c'est un admin, on va vers /admin
-    if (role === 'admin' || role === 'administrateur') {
+    // Si c'est un admin ou un agent, on va vers /admin
+    if (role === 'admin' || role === 'administrateur' || role === 'agent') {
       console.log('[Frontend] Redirecting to /admin');
       router.push('/admin');
     } 
