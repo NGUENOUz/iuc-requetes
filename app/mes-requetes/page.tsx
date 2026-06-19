@@ -4,28 +4,11 @@ import { useState } from 'react';
 import {
   FileText, Search, Clock, CheckCircle, XCircle, Eye,
   ChevronLeft, ChevronRight, Filter, Calendar, AlertCircle,
-  RefreshCw, Home, PlusCircle
+  RefreshCw, Home, PlusCircle, Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import StudentLayout from '../components/StudentLayout';
-
-const REQUETES = [
-  { id: 'REQ-1248', titre: 'Réclamation de note', categorie: 'Scolarité', statut: 'En cours', priorite: 'Haute', date: '19 mai 2025', reponse: 'En cours de vérification par le service scolarité...' },
-  { id: 'REQ-1247', titre: "Demande d'attestation de scolarité", categorie: 'Documents', statut: 'En attente', priorite: 'Moyenne', date: '17 mai 2025', reponse: null },
-  { id: 'REQ-1246', titre: 'Changement de groupe TP', categorie: 'Pédagogie', statut: 'Résolue', priorite: 'Basse', date: '15 mai 2025', reponse: 'Votre demande a été acceptée. Nouveau groupe: TP-A2.' },
-  { id: 'REQ-1245', titre: 'Problème paiement frais scolaires', categorie: 'Finance', statut: 'En cours', priorite: 'Haute', date: '14 mai 2025', reponse: 'Vérification en cours avec le service financier.' },
-  { id: 'REQ-1244', titre: 'Demande de report de session', categorie: 'Scolarité', statut: 'En attente', priorite: 'Moyenne', date: '12 mai 2025', reponse: null },
-  { id: 'REQ-1243', titre: "Demande d'attestation d'inscription", categorie: 'Documents', statut: 'Résolue', priorite: 'Basse', date: '10 mai 2025', reponse: 'Document disponible au secrétariat.' },
-  { id: 'REQ-1242', titre: 'Réclamation résultats manquants', categorie: 'Scolarité', statut: 'Résolue', priorite: 'Haute', date: '08 mai 2025', reponse: 'Notes mises à jour dans votre relevé.' },
-  { id: 'REQ-1241', titre: 'Demande aide financière', categorie: 'Bourse', statut: 'Rejetée', priorite: 'Haute', date: '05 mai 2025', reponse: 'Conditions d\'éligibilité non remplies.' },
-];
-
-const STATS = [
-  { label: 'Total', value: 12, icon: FileText, color: 'bg-slate-100 text-slate-600' },
-  { label: 'En attente', value: 4, icon: Clock, color: 'bg-blue-50 text-blue-600' },
-  { label: 'En cours', value: 5, icon: RefreshCw, color: 'bg-yellow-50 text-yellow-600' },
-  { label: 'Résolues', value: 3, icon: CheckCircle, color: 'bg-emerald-50 text-emerald-600' },
-];
+import { useStudent, useStudentRequests } from '@/lib/hooks';
 
 const STATUTS = ['Tous', 'En attente', 'En cours', 'Résolue', 'Rejetée'];
 
@@ -34,9 +17,17 @@ const statutStyle: Record<string, string> = {
   'En cours': 'bg-yellow-100 text-yellow-700 border-yellow-200',
   'Résolue': 'bg-emerald-100 text-emerald-700 border-emerald-200',
   'Rejetée': 'bg-red-100 text-red-700 border-red-200',
+  'Soumise': 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
+
+// Fonction pour formater la date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  return date.toLocaleDateString('fr-FR', options);
+};
 
 function MesRequetesContent() {
   const [search, setSearch] = useState('');
@@ -44,15 +35,53 @@ function MesRequetesContent() {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  let filtered = REQUETES.filter((r) => {
+  // Récupérer les données
+  const { student, loading: studentLoading } = useStudent();
+  const { requests, stats, loading: requestsLoading, error } = useStudentRequests(student?.id);
+
+  // Filtrer les requêtes
+  let filtered = requests.filter((r) => {
     const q = search.toLowerCase();
-    const matchSearch = !q || r.id.toLowerCase().includes(q) || r.titre.toLowerCase().includes(q);
-    const matchStatut = statut === 'Tous' || r.statut === statut;
+    const matchSearch = !q || r.reference.toLowerCase().includes(q) || r.title.toLowerCase().includes(q);
+    const matchStatut = statut === 'Tous' || r.status.name === statut;
     return matchSearch && matchStatut;
   });
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Créer les stats pour les cartes
+  const STATS = [
+    { label: 'Total', value: stats.total, icon: FileText, color: 'bg-emerald-50 text-emerald-600 border border-emerald-100' },
+    { label: 'En attente', value: stats.pending, icon: Clock, color: 'bg-blue-50 text-blue-600 border border-blue-100' },
+    { label: 'En cours', value: stats.in_progress, icon: RefreshCw, color: 'bg-yellow-50 text-yellow-600 border border-yellow-100' },
+    { label: 'Résolues', value: stats.resolved, icon: CheckCircle, color: 'bg-green-50 text-green-600 border border-green-100' },
+  ];
+
+  // Afficher un loader
+  if (studentLoading || requestsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
+          <p className="text-slate-600 font-medium">Chargement de vos requêtes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <p className="text-slate-900 font-bold text-lg mb-2">Erreur de chargement</p>
+          <p className="text-slate-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 sm:p-6 space-y-5">
@@ -83,56 +112,69 @@ function MesRequetesContent() {
           </Link>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Stats - Améliorées */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {STATS.map(({ label, value, icon: Icon, color }) => (
             <button
               key={label}
               onClick={() => { setStatut(label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label); setPage(1); }}
-              className={`bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-all text-left ${
-                statut === (label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label) ? 'ring-2 ring-emerald-500' : ''
+              className={`bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 text-left group ${
+                statut === (label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label) 
+                  ? 'ring-2 ring-emerald-500 scale-[1.02]' 
+                  : 'hover:scale-[1.02]'
               }`}
             >
-              <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-2 ${color}`}>
-                <Icon size={18} />
+              <div className="flex items-center justify-between mb-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
+                  <Icon size={22} strokeWidth={2.5} />
+                </div>
+                {statut === (label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label) && (
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                )}
               </div>
-              <p className="text-2xl font-black text-slate-900">{value}</p>
-              <p className="text-xs text-slate-500 font-medium">{label}</p>
+              <p className="text-3xl font-black text-slate-900 mb-1">{value}</p>
+              <p className="text-sm text-slate-600 font-semibold">{label}</p>
             </button>
           ))}
         </div>
 
-        {/* Recherche et filtres */}
-        <div className="bg-white rounded-2xl border shadow-sm p-4 space-y-3">
+        {/* Recherche et filtres - Améliorés */}
+        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <div className="relative flex-1 min-w-[250px]">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Rechercher par ID ou titre..."
-                className="w-full h-10 bg-slate-50 rounded-xl pl-9 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-400 transition-all"
+                placeholder="Rechercher par référence ou titre..."
+                className="w-full h-12 bg-slate-50 rounded-xl pl-12 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold border transition-all ${
-                showFilters ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-200'
+              className={`flex items-center gap-2 h-12 px-5 rounded-xl text-sm font-bold transition-all shadow-sm ${
+                showFilters 
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              <Filter size={15} />
+              <Filter size={18} />
               Filtres
+              {showFilters && <span className="text-xs">(✓)</span>}
             </button>
           </div>
 
           {showFilters && (
-            <div className="flex flex-wrap gap-2 pt-1 border-t">
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+              <p className="text-xs font-bold text-slate-600 w-full mb-1">Filtrer par statut :</p>
               {STATUTS.map((s) => (
                 <button
                   key={s}
                   onClick={() => { setStatut(s); setPage(1); }}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                    statut === s ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  className={`text-sm px-4 py-2 rounded-xl font-bold transition-all shadow-sm ${
+                    statut === s 
+                      ? 'bg-emerald-600 text-white scale-105' 
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:scale-105'
                   }`}
                 >
                   {s}

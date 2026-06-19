@@ -74,6 +74,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('[Login] User data retrieved:', {
+      id: userData.id,
+      email: userData.email,
+      role: userData.role,
+      roleName: userData.role?.name
+    });
+
     // Vérifier si l'utilisateur est actif
     if (!userData.is_active) {
       return errorResponse(

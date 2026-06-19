@@ -6,24 +6,9 @@ import {
   GraduationCap, Home, FileText, PlusCircle, Bell,
   User, FileCheck, Settings, LogOut, Search,
   Clock, CheckCircle, XCircle, TrendingUp, ChevronRight, Shield, Plus,
-  ChevronsLeft, ChevronsRight, MessageCircle, LayoutGrid
+  ChevronsLeft, ChevronsRight, MessageCircle, LayoutGrid, Loader2
 } from 'lucide-react';
-
-const STATS = [
-  { label: 'Total requêtes', value: 12, sub: 'Toutes vos demandes', icon: FileText, color: 'bg-emerald-50/70 text-emerald-600 border border-emerald-100/50', trend: '↗' },
-  { label: 'En attente', value: 4, sub: 'En attente de traitement', icon: Clock, color: 'bg-blue-50/70 text-blue-600 border border-blue-100/50', trend: '↗' },
-  { label: 'En cours', value: 5, sub: 'En cours de traitement', icon: Clock, color: 'bg-amber-50/70 text-amber-600 border border-amber-100/50', trend: '↗' },
-  { label: 'Résolues', value: 3, sub: 'Traitées avec succès', icon: CheckCircle, color: 'bg-emerald-100/70 text-emerald-700 border border-emerald-200/50', trend: '↗' },
-  { label: 'Rejetées', value: 0, sub: 'Non acceptées', icon: XCircle, color: 'bg-rose-50/70 text-rose-600 border border-rose-100/50', trend: '↘' },
-];
-
-const REQUETES = [
-  { id: 'REQ-1248', icon: GraduationCap, title: 'Réclamation de note', date: 'Soumis le 17 mai 2025', statut: 'En cours', statutColor: 'bg-yellow-100 text-yellow-700' },
-  { id: 'REQ-1247', icon: FileCheck, title: "Demande d'attestation", date: 'Soumis le 15 mai 2025', statut: 'En attente', statutColor: 'bg-blue-100 text-blue-700' },
-  { id: 'REQ-1246', icon: LayoutGrid, title: 'Changement de groupe', date: 'Soumis le 12 mai 2025', statut: 'Résolue', statutColor: 'bg-emerald-100 text-emerald-700' },
-  { id: 'REQ-1245', icon: FileText, title: 'Problème de paiement', date: 'Soumis le 08 mai 2025', statut: 'En cours', statutColor: 'bg-yellow-100 text-yellow-700' },
-  { id: 'REQ-1241', icon: Bell, title: 'Autre réclamation', date: 'Soumis le 02 mai 2025', statut: 'Résolue', statutColor: 'bg-emerald-100 text-emerald-700' },
-];
+import { useStudent, useStudentRequests } from '@/lib/hooks';
 
 const CHART_POINTS = [
   { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 2.5 }, { x: 3, y: 2 },
@@ -53,9 +38,54 @@ const NAV3 = [
   { label: 'Déconnexion', icon: LogOut },
 ];
 
+// Fonction pour obtenir l'icône de catégorie
+const getCategoryIcon = (iconName: string | null) => {
+  switch (iconName) {
+    case 'graduation-cap': return GraduationCap;
+    case 'file-check': return FileCheck;
+    case 'layout-grid': return LayoutGrid;
+    case 'file-text': return FileText;
+    default: return Bell;
+  }
+};
+
+// Fonction pour formater la date
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+  return `Soumis le ${date.toLocaleDateString('fr-FR', options)}`;
+};
+
+// Fonction pour obtenir la couleur du statut
+const getStatusColor = (statusName: string) => {
+  switch (statusName) {
+    case 'En attente': return 'bg-blue-100 text-blue-700';
+    case 'En cours': return 'bg-yellow-100 text-yellow-700';
+    case 'Résolue': return 'bg-emerald-100 text-emerald-700';
+    case 'Rejetée': return 'bg-rose-100 text-rose-700';
+    default: return 'bg-slate-100 text-slate-700';
+  }
+};
+
 export default function StudentDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+
+  // Récupérer les données de l'étudiant
+  const { student, loading: studentLoading, error: studentError } = useStudent();
+  const { requests, stats, loading: requestsLoading, error: requestsError } = useStudentRequests(student?.id);
+
+  // Les 5 dernières requêtes
+  const latestRequests = requests.slice(0, 5);
+
+  // Créer les stats pour les cartes
+  const STATS = [
+    { label: 'Total requêtes', value: stats.total, sub: 'Toutes vos demandes', icon: FileText, color: 'bg-emerald-50/70 text-emerald-600 border border-emerald-100/50', trend: '↗' },
+    { label: 'En attente', value: stats.pending, sub: 'En attente de traitement', icon: Clock, color: 'bg-blue-50/70 text-blue-600 border border-blue-100/50', trend: '↗' },
+    { label: 'En cours', value: stats.in_progress, sub: 'En cours de traitement', icon: Clock, color: 'bg-amber-50/70 text-amber-600 border border-amber-100/50', trend: '↗' },
+    { label: 'Résolues', value: stats.resolved, sub: 'Traitées avec succès', icon: CheckCircle, color: 'bg-emerald-100/70 text-emerald-700 border border-emerald-200/50', trend: '↗' },
+    { label: 'Rejetées', value: stats.rejected, sub: 'Non acceptées', icon: XCircle, color: 'bg-rose-50/70 text-rose-600 border border-rose-100/50', trend: '↘' },
+  ];
 
   // Guide tooltips — affichés une seule fois
   const [mobileGuide, setMobileGuide] = useState<'menu' | 'chat' | null>(null);
@@ -87,6 +117,31 @@ export default function StudentDashboard() {
     setDesktopChatGuide(false);
     localStorage.setItem('iuc_guide_done', '1');
   };
+
+  // Afficher un loader pendant le chargement
+  if (studentLoading || requestsLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
+          <p className="text-slate-600 font-medium">Chargement de vos données...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur si nécessaire
+  if (studentError || requestsError) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <p className="text-slate-900 font-bold text-lg mb-2">Erreur de chargement</p>
+          <p className="text-slate-600">{studentError || requestsError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-sans">
@@ -190,10 +245,14 @@ export default function StudentDashboard() {
 
             <div className="flex items-center gap-2 pl-3 border-l border-slate-100">
               <div className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden">
-                <User size={18} className="text-emerald-600" />
+                {student?.avatar_url ? (
+                  <img src={student.avatar_url} alt={`${student.first_name} ${student.last_name}`} className="w-full h-full object-cover" />
+                ) : (
+                  <User size={18} className="text-emerald-600" />
+                )}
               </div>
               <div className="hidden sm:block text-right leading-tight">
-                <p className="text-xs font-bold text-slate-800">NGUENOU Wilfried</p>
+                <p className="text-xs font-bold text-slate-800">{student?.first_name} {student?.last_name}</p>
                 <p className="text-[10px] text-slate-400 font-semibold">Étudiant</p>
               </div>
             </div>
@@ -206,11 +265,13 @@ export default function StudentDashboard() {
           {/* Welcome */}
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Bonjour, Wilfried ! </h1>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Bonjour, {student?.first_name} !
+              </h1>
               <p className="text-slate-500 text-xs sm:text-sm mt-0.5">Voici un aperçu de vos requêtes et activités.</p>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-500 bg-white border border-slate-100 rounded-xl px-3 py-2 shrink-0 shadow-sm">
-              <span className="text-emerald-500">📅</span> 19 mai 2025
+              <span className="text-emerald-500">📅</span> {new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </div>
 
@@ -272,8 +333,8 @@ export default function StudentDashboard() {
 
               <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-slate-100">
                 {[
-                  { label: 'Soumises', value: '12', pct: '+33%', up: true },
-                  { label: 'Résolues', value: '3', pct: '+20%', up: true },
+                  { label: 'Soumises', value: stats.total.toString(), pct: '+33%', up: true },
+                  { label: 'Résolues', value: stats.resolved.toString(), pct: stats.resolved > 0 ? '+20%' : '0%', up: stats.resolved > 0 },
                   { label: 'Temps moyen', value: '4.2 j', pct: '-10%', up: false },
                 ].map(({ label, value, pct, up }) => (
                   <div key={label} className="bg-slate-50/50 border border-slate-100/50 rounded-xl p-2.5">
@@ -292,23 +353,42 @@ export default function StudentDashboard() {
                 <Link href="/mes-requetes" className="text-primary-600 text-xs font-bold hover:underline">Voir tout</Link>
               </div>
               <div className="space-y-2">
-                {REQUETES.map(({ id, icon: Icon, title, date, statut, statutColor }) => (
-                  <Link
-                    key={id}
-                    href={`/mes-requetes/${id}`}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100/50 cursor-pointer transition-smooth group"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100/50 flex items-center justify-center shrink-0">
-                      <Icon size={18} className="text-slate-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate">{title}</p>
-                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">{date}</p>
-                    </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 ${statutColor}`}>{statut}</span>
-                    <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-smooth shrink-0" />
-                  </Link>
-                ))}
+                {latestRequests.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText size={40} className="mx-auto mb-2 text-slate-300" />
+                    <p className="text-sm text-slate-500 font-medium">Aucune requête pour le moment</p>
+                    <Link 
+                      href="/nouvelle-requete"
+                      className="inline-flex items-center gap-1 mt-3 text-xs text-emerald-600 hover:text-emerald-700 font-bold"
+                    >
+                      <Plus size={14} />
+                      Créer une requête
+                    </Link>
+                  </div>
+                ) : (
+                  latestRequests.map((request) => {
+                    const IconComponent = getCategoryIcon(request.category.icon);
+                    return (
+                      <Link
+                        key={request.id}
+                        href={`/mes-requetes/${request.reference}`}
+                        className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100/50 cursor-pointer transition-smooth group"
+                      >
+                        <div className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100/50 flex items-center justify-center shrink-0">
+                          <IconComponent size={18} className="text-slate-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-slate-800 truncate">{request.title}</p>
+                          <p className="text-[10px] text-slate-400 font-medium mt-0.5">{formatDate(request.submitted_at)}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 ${getStatusColor(request.status.name)}`}>
+                          {request.status.name}
+                        </span>
+                        <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-smooth shrink-0" />
+                      </Link>
+                    );
+                  })
+                )}
               </div>
             </div>
 

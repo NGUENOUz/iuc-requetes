@@ -5,6 +5,7 @@ import { GraduationCap, User, Lock, ArrowRight } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -57,21 +58,55 @@ export default function LoginPage() {
         body: JSON.stringify({ identifier, password }),
       });
       const data = await res.json();
+      console.log('[Frontend] Login response:', data);
+      console.log('[Frontend] Data structure:', data.data);
+      
       if (!res.ok) {
         toast.error(data.message || 'Échec de la connexion');
         setIsLoading(false);
         return;
       }
+      
+      // Successful login - Établir la session côté client
+      if (data.data?.session) {
+        const { session } = data.data;
+        
+        // Définir la session dans Supabase côté client
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        });
+
+        if (sessionError) {
+          console.error('[Frontend] Session error:', sessionError);
+          toast.error('Erreur lors de l\'établissement de la session');
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('[Frontend] Session établie avec succès');
+      }
+      
       // Successful login, redirect based on role
-      const role = data.user?.role?.name;
-      if (role === 'admin') {
-        router.push('/admin/dashboard');
-      } else if (role === 'etudiant') {
+      // L'API retourne { success: true, data: { user, session } }
+      const role = data.data?.user?.role?.name;
+      console.log('[Frontend] Role name:', role);
+      console.log('[Frontend] Role after lowercase:', role?.toLowerCase());
+      
+      if (role?.toLowerCase() === 'admin') {
+        console.log('[Frontend] Redirecting admin to /admin');
+        router.push('/admin');
+      } else if (role?.toLowerCase() === 'etudiant') {
+        console.log('[Frontend] Redirecting etudiant to /dashboard');
         router.push('/dashboard');
       } else {
+        console.log('[Frontend] Redirecting default to /dashboard');
         router.push('/dashboard');
       }
       toast.success('Connexion réussie');
+      
+      // Petit délai pour s'assurer que la session est bien établie
+      await new Promise(resolve => setTimeout(resolve, 500));
     } catch (err) {
       console.error(err);
       toast.error('Erreur serveur lors de la connexion');

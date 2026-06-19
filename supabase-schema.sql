@@ -65,6 +65,7 @@ CREATE TABLE users (
   
   -- Statut et métadonnées
   is_active BOOLEAN DEFAULT true,
+  must_set_password BOOLEAN DEFAULT true,
   last_login TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
