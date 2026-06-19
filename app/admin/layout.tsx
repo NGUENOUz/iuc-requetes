@@ -81,7 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans">
+    <div className="flex h-screen overflow-hidden bg-background font-sans">
 
       {/* ─── Overlay mobile ─── */}
       {sidebarOpen && (
@@ -96,28 +96,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         className={`
           fixed lg:static inset-y-0 left-0 z-30
           ${collapsed ? 'w-16' : 'w-64'}
-          bg-gradient-to-b from-emerald-900 to-green-700 text-white
+          glass-sidebar text-slate-300
           flex flex-col transition-all duration-300
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
         `}
       >
         {/* ── Logo + bouton collapse ── */}
-        <div className={`p-4 border-b border-white/10 flex items-center shrink-0 ${collapsed ? 'justify-center' : 'gap-3'}`}>
+        <div className={`p-4 border-b border-emerald-950/40 flex items-center shrink-0 ${collapsed ? 'justify-center' : 'gap-3'}`}>
           {!collapsed && (
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-              <LayoutDashboard size={18} className="text-white" />
-            </div>
-          )}
+  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
+    <img src="https://res.cloudinary.com/dcsl6xhli/image/upload/v1781788982/images-removebg-preview_epbah4.png" alt="IUC logo" className="h-4 w-4 object-contain" />
+  </div>
+)}
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-base leading-tight truncate text-white">IUC Requêtes</p>
-              <p className="text-green-300 text-xs">Panel Administrateur</p>
+              <p className="font-extrabold text-base leading-tight truncate text-white">IUC Requêtes</p>
+              <p className="text-emerald-500/80 text-[11px] font-semibold">Panel Admin</p>
             </div>
           )}
           {/* Bouton réduction sidebar */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className={`shrink-0 w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors text-green-200 hover:text-white ${!collapsed ? 'ml-auto' : ''}`}
+            className={`shrink-0 w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center transition-colors text-slate-400 hover:text-white ${!collapsed ? 'ml-auto' : ''}`}
             title={collapsed ? 'Déplier la sidebar' : 'Réduire la sidebar'}
           >
             {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={16} />}
@@ -129,13 +129,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {navSections.map((section) => (
             <div key={section.label}>
               {!collapsed && (
-                <p className="text-green-300 text-[10px] uppercase tracking-widest px-3 pt-1 pb-1.5 font-bold">
+                <p className="text-slate-500 text-[9px] uppercase tracking-widest px-3 pt-1 pb-1.5 font-bold">
                   {section.label}
                 </p>
               )}
-              {collapsed && <div className="my-1 border-t border-white/10" />}
+              {collapsed && <div className="my-2 border-t border-emerald-950/40" />}
 
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive =
@@ -147,11 +147,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       href={item.href}
                       title={collapsed ? item.label : undefined}
                       className={`
-                        flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors text-sm font-medium
+                        flex items-center gap-3 px-3 py-2.5 rounded-xl transition-smooth text-sm font-medium
                         ${collapsed ? 'justify-center relative' : ''}
                         ${isActive
-                          ? 'bg-emerald-500 text-white'
-                          : 'text-green-100 hover:bg-white/10 hover:text-white'
+                          ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/35 shadow-sm font-semibold'
+                          : 'text-slate-400 hover:bg-white/[0.03] hover:text-white'
                         }
                       `}
                     >
@@ -159,19 +159,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
                       {/* Badge */}
                       {item.badge && !collapsed && (
-                        <span className="ml-auto bg-white text-emerald-800 text-[10px] font-black rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center">
+                        <span className="ml-auto bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 text-[10px] font-black rounded-full min-w-[20px] h-5 px-1.5 flex items-center justify-center">
                           {item.badge}
                         </span>
                       )}
                       {item.badge && collapsed && (
-                        <span className="absolute top-1 right-1 bg-white text-emerald-800 text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute top-1 right-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center">
                           {item.badge}
                         </span>
                       )}
                       {/* Badge Nouveau */}
                       {item.isNew && !collapsed && (
-                        <span className="ml-auto bg-violet-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                          Nouveau
+                        <span className="ml-auto bg-violet-500/25 text-violet-400 border border-violet-500/30 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                          New
                         </span>
                       )}
                     </Link>
@@ -183,10 +183,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* ── Déconnexion ── */}
-        <div className={`p-3 border-t border-white/10 ${collapsed ? 'flex justify-center' : ''}`}>
+        <div className={`p-3 border-t border-emerald-950/40 ${collapsed ? 'flex justify-center' : ''}`}>
           <button
             title={collapsed ? 'Déconnexion' : undefined}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-green-100 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium ${collapsed ? 'justify-center w-10' : 'w-full'}`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-white/[0.03] hover:text-white transition-colors text-sm font-medium ${collapsed ? 'justify-center w-10' : 'w-full'}`}
           >
             <LogOut size={18} className="shrink-0" />
             {!collapsed && <span>Déconnexion</span>}
@@ -198,7 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* ── HEADER ── */}
-        <header className="bg-white border-b border-slate-200 px-6 h-16 flex items-center gap-4 shrink-0 z-10">
+        <header className="glass-header px-6 h-16 flex items-center gap-4 shrink-0 z-10">
 
           {/* Bouton hamburger mobile */}
           <button

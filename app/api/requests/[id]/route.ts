@@ -8,6 +8,7 @@ import {
   parseRequestBody,
   ErrorCodes 
 } from '@/lib/utils/api.utils';
+import { requireAuth, canAccessRequest } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // GET /api/requests/[id] - Récupérer une requête spécifique
@@ -71,14 +72,17 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Récupérer l'utilisateur authentifié
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
+    // Vérifier l'authentification
+    const { error: authError, user } = await requireAuth(request);
+    if (authError) return authError;
+
+    // Vérifier l'accès à la requête
+    const hasAccess = await canAccessRequest(user!, params.id);
+    if (!hasAccess) {
       return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
+        'Vous n\'avez pas accès à cette requête',
+        ErrorCodes.FORBIDDEN,
+        403
       );
     }
 
@@ -126,19 +130,12 @@ export async function PATCH(
       );
     }
 
-    // Récupérer l'ID de l'utilisateur
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_user_id', user.id)
-      .single();
-
     // Créer un log d'historique
     await supabaseAdmin
       .from('request_history')
       .insert({
         request_id: params.id,
-        user_id: userData?.id,
+        user_id: user!.id,
         action: 'request_updated',
         description: 'Requête mise à jour',
       });
@@ -159,14 +156,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Récupérer l'utilisateur authentifié
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
+    // Vérifier l'authentification
+    const { error: authError, user } = await requireAuth(request);
+    if (authError) return authError;
+
+    // Vérifier l'accès à la requête
+    const hasAccess = await canAccessRequest(user!, params.id);
+    if (!hasAccess) {
       return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
+        'Vous n\'avez pas accès à cette requête',
+        ErrorCodes.FORBIDDEN,
+        403
       );
     }
 
@@ -201,16 +201,10 @@ export async function DELETE(
     }
 
     // Log d'activité
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_user_id', user.id)
-      .single();
-
     await supabaseAdmin
       .from('activity_logs')
       .insert({
-        user_id: userData?.id,
+        user_id: user!.id,
         action: 'request_deleted',
         entity_type: 'request',
         entity_id: params.id,

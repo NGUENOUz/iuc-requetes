@@ -81,7 +81,7 @@ export default function AdminDashboard() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
-            Tableau de bord 👋
+            Tableau de bord 
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Bienvenue sur le panel d&apos;administration de la gestion des requêtes.
@@ -256,7 +256,7 @@ export default function AdminDashboard() {
                 <Sparkles size={10} /> Bêta
               </span>
             </div>
-            <p className="text-xs text-slate-500 mb-4">Bonjour Administrateur 👋<br />Voici un résumé intelligent de votre activité.</p>
+            <p className="text-xs text-slate-500 mb-4">Bonjour Administrateur <br />Voici un résumé intelligent de votre activité.</p>
 
             {/* Recommandation */}
             <div className="bg-violet-50 rounded-xl p-3 border border-violet-100 mb-3">

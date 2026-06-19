@@ -8,6 +8,7 @@ import {
   getPaginationMetadata,
   ErrorCodes 
 } from '@/lib/utils/api.utils';
+import { requireAuth } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // GET /api/notifications - Récupérer les notifications de l'utilisateur
@@ -15,31 +16,9 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    // Authentification
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
-      );
-    }
-
-    // Récupérer l'utilisateur
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (!userData) {
-      return errorResponse(
-        'Utilisateur non trouvé',
-        ErrorCodes.NOT_FOUND,
-        404
-      );
-    }
+    // Vérifier l'authentification
+    const { error: authError, user: userData } = await requireAuth(request);
+    if (authError) return authError;
 
     const { searchParams } = new URL(request.url);
     const { page, limit, offset } = getPaginationParams(searchParams);
@@ -48,7 +27,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('notifications')
       .select('*', { count: 'exact' })
-      .eq('user_id', userData.id);
+      .eq('user_id', userData!.id);
 
     if (isRead !== null) {
       query = query.eq('is_read', isRead === 'true');
@@ -85,35 +64,13 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    // Authentification
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
-      );
-    }
+    // Vérifier l'authentification
+    const { error: authError, user: userData } = await requireAuth(request);
+    if (authError) return authError;
 
     const { searchParams } = new URL(request.url);
     const notificationId = searchParams.get('id');
     const markAllAsRead = searchParams.get('mark_all') === 'true';
-
-    // Récupérer l'utilisateur
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (!userData) {
-      return errorResponse(
-        'Utilisateur non trouvé',
-        ErrorCodes.NOT_FOUND,
-        404
-      );
-    }
 
     let query = supabaseAdmin
       .from('notifications')
@@ -121,7 +78,7 @@ export async function PATCH(request: NextRequest) {
         is_read: true, 
         read_at: new Date().toISOString() 
       })
-      .eq('user_id', userData.id);
+      .eq('user_id', userData!.id);
 
     if (markAllAsRead) {
       // Marquer toutes les notifications comme lues

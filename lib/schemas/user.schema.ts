@@ -52,6 +52,7 @@ export const userSchema = z.object({
   
   // Statut et métadonnées
   is_active: z.boolean().default(true),
+  must_set_password: z.boolean().default(false),
   last_login: z.string().datetime().nullable().optional(),
   created_at: z.string().datetime().optional(),
   updated_at: z.string().datetime().optional(),
@@ -69,7 +70,7 @@ export const updateUserSchema = createUserSchema.partial();
 
 // Schéma de login
 export const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
+  identifier: z.string().min(1, 'L\'identifiant est requis'),
   password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
 });
 
@@ -105,6 +106,7 @@ export const registerStaffSchema = z.object({
 export type Role = z.infer<typeof roleSchema>;
 export type Service = z.infer<typeof serviceSchema>;
 export type User = z.infer<typeof userSchema>;
+export type UserWithPasswordFlag = User & { must_set_password: boolean };
 export type CreateUser = z.infer<typeof createUserSchema>;
 export type UpdateUser = z.infer<typeof updateUserSchema>;
 export type Login = z.infer<typeof loginSchema>;

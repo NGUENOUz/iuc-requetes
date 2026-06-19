@@ -9,7 +9,7 @@ interface StudentHeaderProps {
 
 export default function StudentHeader({ setSidebarOpen }: StudentHeaderProps) {
   return (
-    <header className="bg-white border-b h-16 px-6 flex items-center gap-4 shrink-0 z-10">
+    <header className="glass-header h-16 px-6 flex items-center gap-4 shrink-0 z-10">
       <button className="lg:hidden" onClick={() => setSidebarOpen(true)}>
         <ChevronsRight size={22} />
       </button>

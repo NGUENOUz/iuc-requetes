@@ -8,6 +8,7 @@ import {
   parseRequestBody,
   ErrorCodes 
 } from '@/lib/utils/api.utils';
+import { requireAuth, canAccessRequest } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/requests/[id]/comments - Ajouter un commentaire
@@ -18,29 +19,17 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Authentification
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
-      );
-    }
+    // Vérifier l'authentification
+    const { error: authError, user: userData } = await requireAuth(request);
+    if (authError) return authError;
 
-    // Récupérer l'utilisateur
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id, first_name, last_name, role:roles(name)')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (!userData) {
+    // Vérifier l'accès à la requête
+    const hasAccess = await canAccessRequest(userData!, params.id);
+    if (!hasAccess) {
       return errorResponse(
-        'Utilisateur non trouvé',
-        ErrorCodes.NOT_FOUND,
-        404
+        'Vous n\'avez pas accès à cette requête',
+        ErrorCodes.FORBIDDEN,
+        403
       );
     }
 
@@ -71,7 +60,7 @@ export async function POST(
       .from('request_comments')
       .insert({
         request_id: params.id,
-        user_id: userData.id,
+        user_id: userData!.id,
         content: validatedData.content,
         is_internal: validatedData.is_internal,
       })
@@ -95,16 +84,16 @@ export async function POST(
       .from('request_history')
       .insert({
         request_id: params.id,
-        user_id: userData.id,
+        user_id: userData!.id,
         action: 'comment_added',
-        description: `Commentaire ajouté par ${userData.first_name} ${userData.last_name}`,
+        description: `Commentaire ajouté par ${userData!.first_name} ${userData!.last_name}`,
       });
 
     // Notifier les parties concernées (sauf l'auteur du commentaire)
     const notificationsToCreate = [];
 
     // Notifier l'étudiant si ce n'est pas un commentaire interne
-    if (!validatedData.is_internal && existingRequest.student_id !== userData.id) {
+    if (!validatedData.is_internal && existingRequest.student_id !== userData!.id) {
       notificationsToCreate.push({
         user_id: existingRequest.student_id,
         type: 'comment_added',
@@ -115,7 +104,7 @@ export async function POST(
     }
 
     // Notifier l'agent assigné
-    if (existingRequest.assigned_to && existingRequest.assigned_to !== userData.id) {
+    if (existingRequest.assigned_to && existingRequest.assigned_to !== userData!.id) {
       notificationsToCreate.push({
         user_id: existingRequest.assigned_to,
         type: 'comment_added',

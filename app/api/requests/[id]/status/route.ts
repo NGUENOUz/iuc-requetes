@@ -8,6 +8,7 @@ import {
   parseRequestBody,
   ErrorCodes 
 } from '@/lib/utils/api.utils';
+import { requireRole } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/requests/[id]/status - Changer le statut d'une requête
@@ -18,23 +19,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Authentification
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
-      );
-    }
-
-    // Récupérer l'utilisateur
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id, first_name, last_name')
-      .eq('auth_user_id', user.id)
-      .single();
+    // Seuls les agents, chefs de service et admins peuvent changer le statut
+    const { error: authError, user: userData } = await requireRole(request, ['admin', 'chef_service', 'agent']);
+    if (authError) return authError;
 
     // Parser et valider
     const body = await parseRequestBody(request);
@@ -123,7 +110,7 @@ export async function POST(
       .from('request_history')
       .insert({
         request_id: params.id,
-        user_id: userData?.id,
+        user_id: userData!.id,
         action: 'status_changed',
         old_value: existingRequest.status.name,
         new_value: newStatus.name,
@@ -136,7 +123,7 @@ export async function POST(
         .from('request_comments')
         .insert({
           request_id: params.id,
-          user_id: userData?.id,
+          user_id: userData!.id,
           content: validatedData.comment,
           is_internal: false,
           is_system: true,

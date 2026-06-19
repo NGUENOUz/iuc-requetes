@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { loginSchema } from '@/lib/schemas';
+import { getUserByMatricule } from '@/lib/utils/supabaseHelpers';
 import { successResponse, errorResponse, handleError, parseRequestBody, ErrorCodes } from '@/lib/utils/api.utils';
 
 // ═══════════════════════════════════════════════════════════════
@@ -13,13 +14,29 @@ export async function POST(request: NextRequest) {
     const body = await parseRequestBody(request);
     const validatedData = loginSchema.parse(body);
 
+    // Resolve identifier to email (support email or matricule)
+    let email: string | undefined;
+  console.log('[Login] Starting login flow');
+    if (validatedData.identifier.includes('@')) {
+      email = validatedData.identifier;
+    } else {
+      const user = await getUserByMatricule(validatedData.identifier);
+      if (!user) {
+        return errorResponse('Matricule introuvable', ErrorCodes.NOT_FOUND, 404);
+      }
+      email = user.email;
+    }
+
     // Authentification avec Supabase
+    console.log('[Login] Attempting signIn with email:', email);
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: validatedData.email,
+      email,
       password: validatedData.password,
     });
 
     if (authError) {
+      console.error('[Login] Supabase auth error:', authError);
+
       return errorResponse(
         'Email ou mot de passe incorrect',
         ErrorCodes.INVALID_CREDENTIALS,
@@ -28,6 +45,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (!authData.user) {
+      console.error('[Login] No user returned from Supabase auth despite no error');
+
       return errorResponse(
         'Erreur lors de la connexion',
         ErrorCodes.UNAUTHORIZED,
@@ -36,6 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Récupérer les informations complètes de l'utilisateur
+    // Fetch full user profile after successful auth
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select(`
@@ -85,6 +105,7 @@ export async function POST(request: NextRequest) {
     return successResponse({
       user: userData,
       session: authData.session,
+      mustSetPassword: userData.must_set_password,
     });
 
   } catch (error) {

@@ -55,7 +55,7 @@ export function errorResponse(
 
 // Gérer les erreurs Zod
 export function handleZodError(error: ZodError): NextResponse<ApiResponse> {
-  const errors = error.errors.map((err) => ({
+  const errors = (error.errors ?? []).map((err) => ({
     field: err.path.join('.'),
     message: err.message,
   }));

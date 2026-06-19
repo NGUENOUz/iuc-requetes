@@ -10,6 +10,7 @@ import {
   getPaginationMetadata,
   ErrorCodes 
 } from '@/lib/utils/api.utils';
+import { requireAuth } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // GET /api/requests - Récupérer toutes les requêtes (avec filtres)
@@ -100,35 +101,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const { error: authError, user: userData } = await requireAuth(request);
+    if (authError) return authError;
+
     // Parser et valider
     const body = await parseRequestBody(request);
     const validatedData = createRequestSchema.parse(body);
-
-    // Récupérer l'utilisateur authentifié (TODO: implémenter auth)
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return errorResponse(
-        'Non authentifié',
-        ErrorCodes.UNAUTHORIZED,
-        401
-      );
-    }
-
-    // Récupérer l'ID de l'utilisateur dans la table users
-    const { data: userData } = await supabase
-      .from('users')
-      .select('id, role:roles(name)')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (!userData) {
-      return errorResponse(
-        'Utilisateur non trouvé',
-        ErrorCodes.NOT_FOUND,
-        404
-      );
-    }
 
     // Récupérer les infos de la catégorie pour le service
     const { data: category } = await supabase
@@ -148,7 +127,7 @@ export async function POST(request: NextRequest) {
     const { data: newRequest, error: createError } = await supabaseAdmin
       .from('requests')
       .insert({
-        student_id: userData.id,
+        student_id: userData!.id,
         category_id: validatedData.category_id,
         priority_id: validatedData.priority_id,
         status_id: submittedStatus?.id,
@@ -191,7 +170,7 @@ export async function POST(request: NextRequest) {
     await supabaseAdmin
       .from('activity_logs')
       .insert({
-        user_id: userData.id,
+        user_id: userData!.id,
         action: 'request_created',
         entity_type: 'request',
         entity_id: newRequest.id,

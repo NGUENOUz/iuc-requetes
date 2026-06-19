@@ -8,6 +8,7 @@ import {
   parseRequestBody,
   ErrorCodes 
 } from '@/lib/utils/api.utils';
+import { requireRole } from '@/lib/middleware/auth.middleware';
 
 // ═══════════════════════════════════════════════════════════════
 // POST /api/requests/[id]/assign - Assigner une requête à un agent
@@ -18,6 +19,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Seuls les admins, chefs de service et agents peuvent assigner
+    const { error: authError, user } = await requireRole(request, ['admin', 'chef_service', 'agent']);
+    if (authError) return authError;
     // Parser et valider
     const body = await parseRequestBody(request);
     const validatedData = assignRequestSchema.parse(body);
