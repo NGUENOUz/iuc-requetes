@@ -2,12 +2,16 @@
 
 import Link from 'next/link';
 import { Bell, User, Search, ChevronsRight } from 'lucide-react';
+import { useNotifications } from '@/lib/hooks';
 
 interface StudentHeaderProps {
   setSidebarOpen: (open: boolean) => void;
 }
 
 export default function StudentHeader({ setSidebarOpen }: StudentHeaderProps) {
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
+
   return (
     <header className="glass-header h-16 px-6 flex items-center gap-4 shrink-0 z-10">
       <button className="lg:hidden" onClick={() => setSidebarOpen(true)}>
@@ -25,7 +29,11 @@ export default function StudentHeader({ setSidebarOpen }: StudentHeaderProps) {
       <div className="ml-auto flex items-center gap-4">
         <Link href="/notifications" className="relative">
           <Bell size={20} className="text-slate-600 hover:text-emerald-600 transition-colors" />
-          <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">3</span>
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
+              {unreadCount}
+            </span>
+          )}
         </Link>
 
         <div className="flex items-center gap-2">

@@ -77,16 +77,55 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
   const { id } = use(params);
   const queryClient = useQueryClient();
   const [commentaire, setCommentaire] = useState('');
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [agentSearchQuery, setAgentSearchQuery] = useState('');
 
   // Fetch live request detail and statuses
   const { data: request, isLoading, error } = useRequest(id);
   const { data: statuses = [] } = useStatuses();
+
+  // Fetch assignable agents
+  const { data: assignableAgents = [], isLoading: isLoadingAgents } = useAssignableUsers(agentSearchQuery);
 
   // Status variables
   const statusResolved = statuses.find((s: any) => s.name === 'Résolue');
   const statusRejected = statuses.find((s: any) => s.name === 'Rejetée');
   const statusInProgress = statuses.find((s: any) => s.name === 'En cours');
   const statusPending = statuses.find((s: any) => s.name === 'En attente');
+
+  // Mutation for assigning request
+  const assignRequestMutation = useMutation({
+    mutationFn: async (agentId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch(`/api/requests/${id}/assign`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ assigned_to: agentId }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.message || 'Erreur lors de l\'assignation de la requête');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Requête assignée avec succès !');
+      setIsAssignModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['request', id] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'requests'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Erreur lors de l\'assignation');
+    }
+  });
 
   // Mutation for updating status (uses the dedicated /status endpoint for history + notifications)
   const updateStatusMutation = useMutation({
@@ -112,9 +151,13 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
       return response.json();
     },
     onSuccess: () => {
+      toast.success('Statut mis à jour avec succès !');
       queryClient.invalidateQueries({ queryKey: ['request', id] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'requests'] });
     },
+    onError: (err: any) => {
+      toast.error(err.message || 'Erreur lors du changement de statut');
+    }
   });
 
   // Mutation for adding a comment
@@ -143,9 +186,13 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
       return response.json();
     },
     onSuccess: () => {
+      toast.success('Commentaire ajouté !');
       setCommentaire('');
       queryClient.invalidateQueries({ queryKey: ['request', id] });
     },
+    onError: (err: any) => {
+      toast.error(err.message || 'Erreur lors de l\'ajout du commentaire');
+    }
   });
 
   const handleAction = (action: string) => {
@@ -539,7 +586,10 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
             ) : (
               <p className="text-xs text-slate-400 italic mb-4">Aucun agent n&apos;est assigné à cette requête.</p>
             )}
-            <button className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-xl transition-colors cursor-pointer">
+            <button 
+              onClick={() => setIsAssignModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-xl transition-colors cursor-pointer"
+            >
               <UserCog size={13} /> Réassigner
             </button>
           </div>
@@ -563,6 +613,129 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
           </div>
         </div>
       </div>
+
+      {/* ── Modal d'assignation ── */}
+      {isAssignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <div>
+                <h3 className="font-bold text-slate-900 text-lg">Assigner un agent</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Sélectionnez le personnel en charge de cette requête</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsAssignModalOpen(false);
+                  setAgentSearchQuery('');
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="p-4 bg-slate-50 border-b border-slate-100">
+              <div className="relative">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un agent (nom, email...)..."
+                  value={agentSearchQuery}
+                  onChange={(e) => setAgentSearchQuery(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-300 transition-all"
+                />
+                {agentSearchQuery && (
+                  <button
+                    onClick={() => setAgentSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Agents List */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-[250px] max-h-[400px]">
+              {isLoadingAgents ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                  <RefreshCw size={24} className="text-violet-500 animate-spin" />
+                  <p className="text-xs text-slate-400 font-medium">Chargement des agents...</p>
+                </div>
+              ) : assignableAgents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <UserCog size={32} className="text-slate-300 mb-2" />
+                  <p className="text-sm font-semibold text-slate-700">Aucun agent trouvé</p>
+                  <p className="text-xs text-slate-400 mt-1">Essayez un autre mot-clé ou modifiez la recherche</p>
+                </div>
+              ) : (
+                assignableAgents.map((agent: any) => {
+                  const isCurrentAgent = request.assigned_agent?.id === agent.id;
+                  const initials = `${agent.first_name?.[0] || ''}${agent.last_name?.[0] || ''}`.toUpperCase().slice(0, 2);
+                  return (
+                    <button
+                      key={agent.id}
+                      disabled={assignRequestMutation.isPending}
+                      onClick={() => assignRequestMutation.mutate(agent.id)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all text-left cursor-pointer group ${
+                        isCurrentAgent 
+                          ? 'bg-violet-50/70 border border-violet-100' 
+                          : 'hover:bg-slate-50 border border-transparent active:scale-[0.98]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="font-bold text-xs text-slate-800 group-hover:text-violet-700 transition-colors">
+                            {agent.first_name} {agent.last_name}
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-mono mt-0.5">{agent.email}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 capitalize">
+                              {agent.role?.description || agent.role?.name || 'Agent'}
+                            </span>
+                            {agent.service && (
+                              <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-50 text-blue-600">
+                                {agent.service.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {isCurrentAgent ? (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-violet-700 bg-violet-100/70 px-2 py-0.5 rounded-full">
+                          <CheckCircle2 size={10} /> Assigné
+                        </span>
+                      ) : (
+                        <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-50 p-4 border-t border-slate-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAssignModalOpen(false);
+                  setAgentSearchQuery('');
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   User, FileCheck, Settings, LogOut,
   ChevronsLeft, ChevronsRight
 } from 'lucide-react';
+import { useNotifications } from '@/lib/hooks';
 
 const NAV = [
   { label: 'Tableau de bord', icon: Home, href: '/dashboard' },
@@ -16,7 +17,7 @@ const NAV = [
 ];
 
 const NAV2 = [
-  { label: 'Notifications', icon: Bell, badge: 3, href: '/notifications' },
+  { label: 'Notifications', icon: Bell, href: '/notifications' },
 ];
 
 const NAV3 = [
@@ -34,6 +35,8 @@ interface StudentSidebarProps {
 export default function StudentSidebar({ sidebarOpen, setSidebarOpen }: StudentSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
 
   return (
     <>
@@ -85,8 +88,9 @@ export default function StudentSidebar({ sidebarOpen, setSidebarOpen }: StudentS
 
           {!collapsed && <p className="text-slate-500 text-[9px] uppercase tracking-widest px-3 pt-5 pb-1 font-bold">Notifications</p>}
           {collapsed && <div className="my-2 border-t border-emerald-950/40" />}
-          {NAV2.map(({ label, icon: Icon, badge, href }) => {
+          {NAV2.map(({ label, icon: Icon, href }) => {
             const isActive = pathname === href;
+            const badge = unreadCount;
             return (
               <Link 
                 key={label} 
@@ -101,8 +105,8 @@ export default function StudentSidebar({ sidebarOpen, setSidebarOpen }: StudentS
               >
                 <Icon size={18} className="shrink-0" />
                 {!collapsed && label}
-                {badge && !collapsed && <span className="ml-auto bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{badge}</span>}
-                {badge && collapsed && <span className="absolute top-1 right-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{badge}</span>}
+                {badge > 0 && !collapsed && <span className="ml-auto bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{badge}</span>}
+                {badge > 0 && collapsed && <span className="absolute top-1 right-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{badge}</span>}
               </Link>
             );
           })}

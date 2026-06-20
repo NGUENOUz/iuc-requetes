@@ -5,7 +5,14 @@ export { useAdminKPIs, useRecentRequests, useRequestChart, useStatusDistribution
 export { useSuggestions, useGenerateSuggestions, useUpdateSuggestionStatus } from './useAISuggestions';
 export { useAIChat } from './useAIChat';
 export { useAdminRequests, useStatuses, usePriorities, useServices, useAssignableUsers } from './useAdminRequests';
-export { useRequest } from './useData';
+export { 
+  useRequest, 
+  useNotifications, 
+  useMarkNotificationAsRead, 
+  useMarkAllNotificationsAsRead, 
+  useDeleteNotification, 
+  useDeleteAllNotifications 
+} from './useData';
 export { useAgentStats, useAgentRecentRequests, useAgentRequestChart, useAgentStatusDistribution } from './useAgentStats';
 
 

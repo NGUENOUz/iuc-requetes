@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { useAuthStore } from '@/lib/store/auth.store';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { RouteGuard } from '@/components/RouteGuard';
+import { useNotifications } from '@/lib/hooks';
 
 import {
   LayoutDashboard,
@@ -109,7 +109,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuth();
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
   
   // Déterminer la navigation selon le rôle
   const isAdmin = user?.role?.name === 'admin';
@@ -120,12 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const panelTitle = isAdmin ? 'Panel Admin' : 'Espace Agent';
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.push('/login');
-    } catch (err) {
-      console.error('Error logging out:', err);
-    }
+    await signOut();
   };
 
   return (
@@ -274,10 +271,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="ml-auto flex items-center gap-2">
 
             {/* Notifications */}
-            <button className="relative w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all">
+            <Link 
+              href="/notifications" 
+              className="relative w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all"
+              title="Notifications"
+            >
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-            </button>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 bg-red-500 text-white text-[8px] font-black rounded-full w-4 h-4 flex items-center justify-center border border-white animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
 
             {/* Messages */}
             <button className="relative w-9 h-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all">
@@ -309,6 +314,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
+      </div>
       </div>
     </RouteGuard>
   );

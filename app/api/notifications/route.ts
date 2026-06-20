@@ -115,3 +115,58 @@ export async function PATCH(request: NextRequest) {
     return handleError(error);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE /api/notifications - Supprimer une notification ou toutes
+// ═══════════════════════════════════════════════════════════════
+
+export async function DELETE(request: NextRequest) {
+  try {
+    // Vérifier l'authentification
+    const { error: authError, user: userData } = await requireAuth(request);
+    if (authError) return authError;
+
+    const { searchParams } = new URL(request.url);
+    const notificationId = searchParams.get('id');
+    const deleteAll = searchParams.get('all') === 'true';
+
+    let query = supabaseAdmin
+      .from('notifications')
+      .delete()
+      .eq('user_id', userData!.id);
+
+    if (deleteAll) {
+      // Supprimer toutes les notifications de cet utilisateur
+    } else if (notificationId) {
+      // Supprimer une notification spécifique
+      query = query.eq('id', notificationId);
+    } else {
+      return errorResponse(
+        'ID de notification ou all=true requis',
+        ErrorCodes.INVALID_INPUT,
+        400
+      );
+    }
+
+    const { error } = await query;
+
+    if (error) {
+      return errorResponse(
+        'Erreur lors de la suppression des notifications',
+        ErrorCodes.DELETE_FAILED,
+        500,
+        error.message
+      );
+    }
+
+    return successResponse({ 
+      message: deleteAll 
+        ? 'Toutes les notifications ont été supprimées' 
+        : 'Notification supprimée' 
+    });
+
+  } catch (error) {
+    return handleError(error);
+  }
+}
+

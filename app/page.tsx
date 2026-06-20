@@ -71,7 +71,7 @@ export default function LoginPage() {
       if (data.data?.session) {
         const { session } = data.data;
         
-        // Définir la session dans Supabase côté client
+        console.log('[Frontend] Setting session...');
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: session.access_token,
           refresh_token: session.refresh_token,
@@ -84,29 +84,28 @@ export default function LoginPage() {
           return;
         }
 
+        // Sauvegarder l'utilisateur dans localStorage
+        localStorage.setItem('iuc_user', JSON.stringify(data.data.user));
         console.log('[Frontend] Session établie avec succès');
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
       
-      // Successful login, redirect based on role
-      // L'API retourne { success: true, data: { user, session } }
+      toast.success('Connexion réussie');
+      
       const role = data.data?.user?.role?.name;
       console.log('[Frontend] Role name:', role);
-      console.log('[Frontend] Role after lowercase:', role?.toLowerCase());
       
       if (role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'agent') {
         console.log('[Frontend] Redirecting admin/agent to /admin');
-        router.push('/admin');
+        window.location.href = '/admin';
       } else if (role?.toLowerCase() === 'etudiant') {
         console.log('[Frontend] Redirecting etudiant to /dashboard');
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       } else {
         console.log('[Frontend] Redirecting default to /dashboard');
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       }
-      toast.success('Connexion réussie');
-      
-      // Petit délai pour s'assurer que la session est bien établie
-      await new Promise(resolve => setTimeout(resolve, 500));
     } catch (err) {
       console.error(err);
       toast.error('Erreur serveur lors de la connexion');
