@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[2/5] 📥 Parsing body...');
-    const body = await parseRequestBody(request);
-    const { analysisType, period, filters } = body;
+    const body: any = await parseRequestBody(request);
+    const { analysisType, period, filters } = body || {};
 
     // Types d'analyse supportés
     const validTypes = ['performance', 'trends', 'satisfaction', 'workload', 'sla'];
@@ -193,7 +193,7 @@ async function getPerformanceData(dateFrom: Date, filters: any) {
     .not('resolution_time_hours', 'is', null);
 
   const avgResolutionTime = avgTime && avgTime.length > 0
-    ? avgTime.reduce((acc, r) => acc + (r.resolution_time_hours || 0), 0) / avgTime.length
+    ? avgTime.reduce((acc: number, r: any) => acc + (r.resolution_time_hours || 0), 0) / avgTime.length
     : 0;
 
   return {
@@ -216,7 +216,7 @@ async function getTrendsData(dateFrom: Date, filters: any) {
 
   // Grouper par jour
   const byDay: Record<string, number> = {};
-  requests?.forEach(req => {
+  requests?.forEach((req: any) => {
     const day = new Date(req.submitted_at).toISOString().split('T')[0];
     byDay[day] = (byDay[day] || 0) + 1;
   });
@@ -240,11 +240,11 @@ async function getSatisfactionData(dateFrom: Date, filters: any) {
     .gte('created_at', dateFrom.toISOString());
 
   const avgRating = ratings && ratings.length > 0
-    ? ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length
+    ? ratings.reduce((acc: number, r: any) => acc + r.rating, 0) / ratings.length
     : 0;
 
   const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  ratings?.forEach(r => {
+  ratings?.forEach((r: any) => {
     distribution[r.rating as keyof typeof distribution]++;
   });
 
@@ -269,7 +269,7 @@ async function getWorkloadData(dateFrom: Date, filters: any) {
     .is('resolved_at', null);
 
   const workload: Record<string, any> = {};
-  agents?.forEach(req => {
+  agents?.forEach((req: any) => {
     const agentId = req.assigned_to;
     if (!agentId) return;
     

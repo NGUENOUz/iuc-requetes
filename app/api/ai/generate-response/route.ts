@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
   
   try {
     console.log('[1/5] 📥 Parsing body...');
-    const body = await parseRequestBody(request);
-    const { requestId, customPrompt } = body;
+    const body: any = await parseRequestBody(request);
+    const { requestId, customPrompt } = body || {};
 
     if (!requestId) {
       return errorResponse(

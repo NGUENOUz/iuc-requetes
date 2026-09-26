@@ -95,7 +95,7 @@ export function useAgentRequestChart(days = 12) {
       }
 
       // Remplir avec les données réelles
-      data?.forEach((req) => {
+      data?.forEach((req: any) => {
         if (!req.submitted_at) return;
         const date = new Date(req.submitted_at);
         const dayLabel = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });

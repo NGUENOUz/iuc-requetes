@@ -357,14 +357,14 @@ function ProfilContent() {
 
           <Link
             href="/documents"
-            className="flex items-center gap-3 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors"
+            className="flex items-center gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
           >
-            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center text-white">
+            <div className="w-10 h-10 bg-neutral-900 dark:bg-neutral-800 rounded-xl flex items-center justify-center text-white">
               <Building size={20} />
             </div>
             <div>
-              <p className="font-bold text-purple-900 text-sm">Documents</p>
-              <p className="text-xs text-purple-600">Attestations & relevés</p>
+              <p className="font-bold text-neutral-900 dark:text-white text-sm">Documents</p>
+              <p className="text-xs text-neutral-500">Attestations & relevés</p>
             </div>
           </Link>
 

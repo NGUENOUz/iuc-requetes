@@ -35,10 +35,10 @@ const DEPUTY = {
 };
 
 const STATS = [
-  { label: 'Requêtes en cours', value: 12, icon: Clock, color: 'text-amber-600 bg-amber-50' },
-  { label: 'Requêtes résolues', value: 184, icon: CheckCircle, color: 'text-emerald-600 bg-emerald-50' },
-  { label: 'Taux de résolution', value: '92%', icon: TrendingUp, color: 'text-blue-600 bg-blue-50' },
-  { label: 'Temps moyen', value: '1.8 jours', icon: Zap, color: 'text-violet-600 bg-violet-50' },
+  { label: 'Requêtes en cours', value: 12, icon: Clock, color: 'text-[#171717] bg-[#f5f5f5]' },
+  { label: 'Requêtes résolues', value: 184, icon: CheckCircle, color: 'text-[#171717] bg-[#f5f5f5]' },
+  { label: 'Taux de résolution', value: '92%', icon: TrendingUp, color: 'text-[#171717] bg-[#f5f5f5]' },
+  { label: 'Temps moyen', value: '1.8 jours', icon: Zap, color: 'text-[#171717] bg-[#f5f5f5]' },
 ];
 
 const REQUETES_ACTIVES = [
@@ -59,7 +59,7 @@ const REQUETES_HISTORIQUE = [
 const ACTIVITES = [
   { date: 'Il y a 10 min', action: 'Requête assignée', detail: 'REQ-1262 assignée par Superviseur Paul', color: 'bg-blue-100 text-blue-600', icon: Clock },
   { date: 'Il y a 2 heures', action: 'Requête résolue', detail: 'REQ-1201 marquée comme résolue', color: 'bg-emerald-100 text-emerald-600', icon: CheckCircle },
-  { date: 'Hier, 16:30', action: 'Commentaire interne', detail: 'A posté un commentaire sur REQ-1248', color: 'bg-purple-100 text-purple-600', icon: MessageSquare },
+  { date: 'Hier, 16:30', action: 'Commentaire interne', detail: 'A posté un commentaire sur REQ-1248', color: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300', icon: MessageSquare },
   { date: '20 mai 2025', action: 'Statut mis à jour', detail: "Passage du statut d'absence à 'Disponible'", color: 'bg-slate-100 text-slate-600', icon: UserCheck },
   { date: '19 mai 2025', action: 'Requête transférée', detail: 'REQ-1130 transférée à Scolarité', color: 'bg-amber-100 text-amber-600', icon: RefreshCw },
 ];
@@ -93,9 +93,9 @@ const prioriteStyle: Record<string, string> = {
 };
 
 const roleStyle: Record<string, string> = {
-  'Agent':          'bg-slate-100 text-slate-700',
-  'Superviseur':    'bg-violet-100 text-violet-700',
-  'Administrateur': 'bg-amber-100 text-amber-700',
+  'Agent':          'bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]',
+  'Superviseur':    'bg-[#171717] text-white',
+  'Administrateur': 'bg-[#262626] text-white',
 };
 
 const roleIcon: Record<string, React.ReactNode> = {
@@ -140,8 +140,8 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
 
       {/* ── Actions ── */}
       <div className="flex flex-wrap gap-2">
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-          <Edit3 size={14} /> Modifier le compte
+        <button className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+          <Edit3 size={13} /> Modifier le compte
         </button>
         
         {/* Toggle Disponibilité */}
@@ -188,14 +188,14 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
           {/* Carte profil */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             {/* Bannière */}
-            <div className="h-20 bg-gradient-to-r from-emerald-700 to-teal-600 relative">
+            <div className="h-20 bg-neutral-900 dark:bg-neutral-800 relative">
               <span className="absolute top-3 right-3 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                 Accès: {DEPUTY.dernierAcces}
               </span>
             </div>
             {/* Avatar */}
             <div className="px-5 pb-5">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 text-white text-xl font-black flex items-center justify-center -mt-8 mb-3 border-4 border-white shadow-md">
+              <div className="w-16 h-16 rounded-2xl bg-neutral-900 dark:bg-neutral-800 text-white text-xl font-black flex items-center justify-center -mt-8 mb-3 border-4 border-white dark:border-[#171717] shadow-md">
                 {DEPUTY.avatar}
               </div>
               <div className="flex items-start justify-between gap-2">
@@ -224,7 +224,7 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
                 { icon: Mail, label: DEPUTY.email, href: `mailto:${DEPUTY.email}`, color: 'bg-blue-50 text-blue-500' },
                 { icon: Phone, label: DEPUTY.telephone, href: `tel:${DEPUTY.telephone}`, color: 'bg-emerald-50 text-emerald-500' },
                 { icon: MapPin, label: DEPUTY.adresse, color: 'bg-slate-100 text-slate-500' },
-                { icon: Calendar, label: `Recruté(e) le ${DEPUTY.dateEntree}`, color: 'bg-violet-50 text-violet-500' },
+                { icon: Calendar, label: `Recruté(e) le ${DEPUTY.dateEntree}`, color: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' },
                 { icon: Briefcase, label: `Sexe: ${DEPUTY.sexe}`, color: 'bg-amber-50 text-amber-600' },
               ].map(({ icon: Icon, label, href, color }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -245,7 +245,7 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-slate-900 text-sm">Spécialités de traitement</h3>
-              <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Automatique</span>
+              <span className="bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Automatique</span>
             </div>
             <p className="text-xs text-slate-400 mb-3">Ces catégories de requêtes lui sont attribuées en priorité par l&apos;algorithme de routage.</p>
             <div className="flex flex-wrap gap-1.5">
@@ -281,21 +281,21 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
           {/* Note interne admin */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
-                <MessageSquare size={13} className="text-violet-600" />
+              <div className="w-7 h-7 rounded-md bg-[#f5f5f5] flex items-center justify-center">
+                <MessageSquare size={13} className="text-[#171717]" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm">Notes d&apos;évaluation</h3>
+              <h3 className="font-semibold text-[#171717] text-sm">Notes d&apos;évaluation</h3>
             </div>
             <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="Ajouter un commentaire d'évaluation ou note administrative confidentielle..."
               rows={3}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-300 transition-all resize-none"
+              className="w-full bg-[#fafafa] border border-[#e5e5e5] rounded-md px-3 py-2 text-xs text-[#171717] placeholder:text-[#a3a3a3] outline-none focus:border-[#171717] transition-all resize-none"
             />
             <button
               disabled={!note.trim()}
-              className="mt-2 w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-200 disabled:cursor-not-allowed text-white text-xs font-bold py-2 rounded-xl transition-colors shadow-sm"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-[#171717] hover:bg-[#262626] disabled:bg-[#e5e5e5] disabled:cursor-not-allowed text-white text-xs font-medium py-2 rounded-md transition-colors cursor-pointer"
             >
               <Send size={12} /> Enregistrer la note
             </button>
@@ -508,26 +508,26 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
             )}
           </div>
 
-          {/* Widget IA */}
-          <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-500/20">
+          {/* Widget IA (Style Vercel Dark Card) */}
+          <div className="bg-[#171717] dark:bg-[#121215] border border-[#262626] dark:border-[#27272a] rounded-xl p-5 text-white shadow-xs">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Sparkles size={16} className="text-indigo-200" />
-                  <h3 className="font-bold text-sm">Analyse IA — Charge de travail</h3>
+                  <Sparkles size={15} className="text-white" />
+                  <h3 className="font-semibold text-xs text-white uppercase tracking-wider">Analyse IA — Charge de travail</h3>
                 </div>
-                <p className="text-xs text-indigo-100 leading-relaxed mb-3">
+                <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
                   TAMBA Eric gère actuellement <strong>12 requêtes actives</strong>, ce qui représente une charge de travail <strong>optimale</strong> pour son profil. 
                   Son temps moyen de résolution (1.8j) est excellent. 
                   Aucun retard critique n&apos;est signalé sur ses dossiers en cours.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Charge: Normale (82%)</div>
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Rapidité: Top 10% ⚡</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Charge: Équilibrée (82%)</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Rapidité: Top 10% ⚡</div>
                 </div>
               </div>
-              <div className="bg-white/20 rounded-2xl p-3 shrink-0">
-                <TrendingUp size={28} className="text-white" />
+              <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">
+                <TrendingUp size={20} className="text-white" />
               </div>
             </div>
           </div>

@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Settings, Save, Bell, Mail, Clock, Shield, Database, Zap, Users, FileText, Palette, Globe, Check } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Settings, Save, Bell, Mail, Clock, Shield, Database, Zap, Users, Palette, Check, Download, Upload } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface SettingSection {
   id: string;
@@ -172,7 +174,7 @@ export default function ParametresPage() {
       ]
     },
     {
-      id: 'data',
+      id: 'database',
       title: 'Base de données',
       icon: Database,
       settings: [
@@ -216,7 +218,7 @@ export default function ParametresPage() {
           type: 'select',
           value: 'light',
           options: [
-            { value: 'light', label: 'Clair' },
+            { value: 'light', label: 'Clair (Noir & Blanc)' },
             { value: 'dark', label: 'Sombre' },
             { value: 'auto', label: 'Automatique' }
           ]
@@ -243,9 +245,16 @@ export default function ParametresPage() {
     }
   ]);
 
+  const { theme, setTheme } = useTheme();
   const [saved, setSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSettingChange = (sectionId: string, settingId: string, newValue: any) => {
+    if (settingId === 'theme') {
+      setTheme(newValue === 'dark' ? 'dark' : 'light');
+      toast.success(`Mode ${newValue === 'dark' ? 'sombre' : 'clair'} activé`);
+    }
+
     setSections(sections.map(section => {
       if (section.id === sectionId) {
         return {
@@ -259,39 +268,61 @@ export default function ParametresPage() {
     }));
   };
 
+  const handleExportDatabase = () => {
+    window.location.href = '/api/admin/backup';
+    toast.success('Téléchargement de la base locale JSON lancé');
+  };
+
+  const handleImportDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const res = await fetch('/api/admin/backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(parsed),
+      });
+      if (res.ok) {
+        toast.success('Base de données restaurée avec succès !');
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        toast.error('Erreur lors de la restauration');
+      }
+    } catch {
+      toast.error('Fichier JSON invalide');
+    }
+  };
+
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
 
       {/* En-tête */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-green-700 text-white flex items-center justify-center shadow-lg">
-            <Settings size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-900">Paramètres Système</h1>
-            <p className="text-slate-500 text-sm">Configuration globale de la plateforme IUC Requêtes</p>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e5e5] pb-5">
+        <div>
+          <h1 className="text-xl font-semibold text-[#171717] tracking-tight">Paramètres du Système</h1>
+          <p className="text-[#737373] text-sm mt-0.5">Configuration globale de l&apos;instance IUC Requêtes</p>
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm"
+          className="flex items-center gap-2 bg-[#171717] hover:bg-[#262626] text-white font-medium text-xs px-4 py-2 rounded-md transition-colors"
         >
-          {saved ? <Check size={18} /> : <Save size={18} />}
-          {saved ? 'Enregistré' : 'Enregistrer'}
+          {saved ? <Check size={14} /> : <Save size={14} />}
+          {saved ? 'Enregistré' : 'Enregistrer les modifications'}
         </button>
       </div>
 
       {/* Message de succès */}
       {saved && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl p-4 flex items-center gap-3">
-          <Check size={20} className="shrink-0" />
-          <p className="text-sm font-semibold">Paramètres enregistrés avec succès !</p>
+        <div className="bg-[#f5f5f5] border border-[#e5e5e5] text-[#171717] rounded-md p-3.5 flex items-center gap-2.5 text-xs font-medium">
+          <Check size={16} className="text-[#171717] shrink-0" />
+          <span>Paramètres sauvegardés avec succès.</span>
         </div>
       )}
 
@@ -300,22 +331,20 @@ export default function ParametresPage() {
         {sections.map(section => {
           const Icon = section.icon;
           return (
-            <div key={section.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div key={section.id} className="bg-white rounded-md border border-[#e5e5e5] overflow-hidden">
               {/* En-tête de section */}
-              <div className="bg-slate-50 border-b border-slate-200 p-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <Icon size={18} />
-                </div>
-                <h2 className="font-bold text-slate-900 text-lg">{section.title}</h2>
+              <div className="bg-[#fafafa] border-b border-[#e5e5e5] px-4 py-3 flex items-center gap-2.5">
+                <Icon size={15} className="text-[#737373]" />
+                <h2 className="font-semibold text-[#171717] text-sm">{section.title}</h2>
               </div>
 
               {/* Paramètres */}
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#f0f0f0]">
                 {section.settings.map(setting => (
-                  <div key={setting.id} className="p-5 flex items-center justify-between gap-6">
+                  <div key={setting.id} className="p-4 flex items-center justify-between gap-6 hover:bg-[#fafafa]/50 transition-colors">
                     <div className="flex-1">
-                      <h3 className="font-bold text-slate-900 text-sm mb-1">{setting.label}</h3>
-                      <p className="text-xs text-slate-500">{setting.description}</p>
+                      <h3 className="font-medium text-[#171717] text-xs mb-0.5">{setting.label}</h3>
+                      <p className="text-[11px] text-[#737373]">{setting.description}</p>
                     </div>
 
                     {/* Contrôles selon le type */}
@@ -323,13 +352,13 @@ export default function ParametresPage() {
                       {setting.type === 'toggle' && (
                         <button
                           onClick={() => handleSettingChange(section.id, setting.id, !setting.value)}
-                          className={`relative w-12 h-6 rounded-full transition-all ${
-                            setting.value ? 'bg-emerald-500' : 'bg-slate-300'
+                          className={`relative w-10 h-5 rounded-full transition-colors ${
+                            setting.value ? 'bg-[#171717]' : 'bg-[#e5e5e5]'
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-                              setting.value ? 'translate-x-6' : 'translate-x-0'
+                            className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                              setting.value ? 'translate-x-5' : 'translate-x-0'
                             }`}
                           />
                         </button>
@@ -339,7 +368,7 @@ export default function ParametresPage() {
                         <select
                           value={setting.value}
                           onChange={e => handleSettingChange(section.id, setting.id, e.target.value)}
-                          className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+                          className="px-3 py-1.5 border border-[#e5e5e5] rounded-md text-xs font-medium text-[#171717] bg-white focus:outline-none focus:border-[#171717]"
                         >
                           {setting.options?.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -352,7 +381,7 @@ export default function ParametresPage() {
                           type="number"
                           value={setting.value}
                           onChange={e => handleSettingChange(section.id, setting.id, parseInt(e.target.value) || 0)}
-                          className="w-24 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 text-center focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+                          className="w-20 px-3 py-1.5 border border-[#e5e5e5] rounded-md text-xs font-medium text-[#171717] text-center focus:outline-none focus:border-[#171717]"
                         />
                       )}
 
@@ -361,34 +390,65 @@ export default function ParametresPage() {
                           type="text"
                           value={setting.value}
                           onChange={e => handleSettingChange(section.id, setting.id, e.target.value)}
-                          className="w-64 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
+                          className="w-56 px-3 py-1.5 border border-[#e5e5e5] rounded-md text-xs font-medium text-[#171717] focus:outline-none focus:border-[#171717]"
                         />
                       )}
                     </div>
                   </div>
                 ))}
+
+                {section.id === 'database' && (
+                  <div className="p-4 bg-[#fafafa] border-t border-[#e5e5e5] flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <h4 className="font-semibold text-[#171717] text-xs">Gestion locale des données (JSON)</h4>
+                      <p className="text-[11px] text-[#737373] mt-0.5">Exportez une sauvegarde complète ou restaurez des données de démonstration.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImportDatabase}
+                        accept=".json"
+                        className="hidden"
+                      />
+                      <button
+                        onClick={handleExportDatabase}
+                        type="button"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f5f5f5] text-[#171717] font-medium text-xs rounded-md border border-[#e5e5e5] transition-colors"
+                      >
+                        <Download size={13} className="text-[#737373]" />
+                        Exporter (JSON)
+                      </button>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        type="button"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#171717] hover:bg-[#262626] text-white font-medium text-xs rounded-md transition-colors"
+                      >
+                        <Upload size={13} />
+                        Importer / Restaurer
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Actions dangereuses */}
-      <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
+      {/* Actions de réinitialisation */}
+      <div className="bg-white border border-[#e5e5e5] rounded-md p-4">
         <div className="flex items-start gap-3">
-          <Shield size={20} className="text-red-600 shrink-0 mt-0.5" />
+          <Shield size={18} className="text-[#737373] shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="font-bold text-red-900 mb-1">Zone dangereuse</h3>
-            <p className="text-sm text-red-700 mb-4">Ces actions sont irréversibles. Utilisez avec précaution.</p>
-            <div className="flex flex-wrap gap-3">
-              <button className="text-sm font-bold bg-white hover:bg-red-50 text-red-700 border border-red-200 px-4 py-2 rounded-lg transition-all">
-                Réinitialiser tous les paramètres
+            <h3 className="font-semibold text-xs text-[#171717] mb-1">Actions d&apos;administration système</h3>
+            <p className="text-[11px] text-[#737373] mb-3">Opérations de maintenance des caches et des index.</p>
+            <div className="flex flex-wrap gap-2">
+              <button className="text-xs font-medium bg-white hover:bg-[#fafafa] text-[#171717] border border-[#e5e5e5] px-3 py-1.5 rounded-md transition-colors">
+                Réinitialiser les paramètres
               </button>
-              <button className="text-sm font-bold bg-white hover:bg-red-50 text-red-700 border border-red-200 px-4 py-2 rounded-lg transition-all">
-                Vider le cache système
-              </button>
-              <button className="text-sm font-bold bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all shadow-sm">
-                Supprimer toutes les données
+              <button className="text-xs font-medium bg-white hover:bg-[#fafafa] text-[#171717] border border-[#e5e5e5] px-3 py-1.5 rounded-md transition-colors">
+                Purger le cache mémoire
               </button>
             </div>
           </div>

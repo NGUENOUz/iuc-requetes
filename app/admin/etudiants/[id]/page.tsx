@@ -55,7 +55,7 @@ const ACTIVITES = [
   { date: '10 mai 2025', action: 'Requête résolue', detail: "Demande d'attestation — Scolarité", color: 'bg-emerald-100 text-emerald-600', icon: CheckCircle },
   { date: '02 mai 2025', action: 'Requête résolue', detail: 'Changement de groupe — Pédagogie', color: 'bg-emerald-100 text-emerald-600', icon: CheckCircle },
   { date: '01 avr. 2025', action: 'Connexion au portail', detail: 'Accès depuis Yaoundé, CM', color: 'bg-slate-100 text-slate-600', icon: Shield },
-  { date: '15 mar. 2025', action: 'Profil mis à jour', detail: 'Numéro de téléphone modifié', color: 'bg-violet-100 text-violet-600', icon: Edit3 },
+  { date: '15 mar. 2025', action: 'Profil mis à jour', detail: 'Numéro de téléphone modifié', color: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300', icon: Edit3 },
 ];
 
 const NOTES = [
@@ -123,26 +123,26 @@ export default function AdminEtudiantDetailPage({ params }: { params: Promise<{ 
 
       {/* ── Actions ── */}
       <div className="flex flex-wrap gap-2">
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-          <Edit3 size={14} /> Modifier le profil
+        <button className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+          <Edit3 size={13} /> Modifier le profil
         </button>
         {statutLocal === 'Actif' ? (
           <button onClick={() => setStatutLocal('Suspendu')}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-red-500/20">
-            <UserX size={14} /> Suspendre
+            className="flex items-center gap-1.5 bg-white hover:bg-[#fafafa] text-red-600 border border-red-200 text-xs font-medium px-3 py-2 rounded-md transition-colors">
+            <UserX size={13} /> Suspendre
           </button>
         ) : (
           <button onClick={() => setStatutLocal('Actif')}
-            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
-            <UserCheck size={14} /> Réactiver
+            className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+            <UserCheck size={13} /> Réactiver
           </button>
         )}
         <a href={`mailto:${ETUDIANT.email}`}
-          className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-200 transition-colors shadow-sm">
-          <Mail size={14} /> Envoyer un email
+          className="flex items-center gap-1.5 bg-white hover:bg-[#fafafa] text-[#171717] text-xs font-medium px-3 py-2 rounded-md border border-[#e5e5e5] transition-colors">
+          <Mail size={13} /> Envoyer un email
         </a>
-        <button className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-200 transition-colors shadow-sm ml-auto">
-          <Download size={14} /> Exporter le dossier
+        <button className="flex items-center gap-1.5 bg-white hover:bg-[#fafafa] text-[#171717] text-xs font-medium px-3 py-2 rounded-md border border-[#e5e5e5] transition-colors ml-auto">
+          <Download size={13} /> Exporter le dossier
         </button>
       </div>
 
@@ -192,7 +192,7 @@ export default function AdminEtudiantDetailPage({ params }: { params: Promise<{ 
                 { icon: Mail, label: ETUDIANT.email, href: `mailto:${ETUDIANT.email}`, color: 'bg-blue-50 text-blue-500' },
                 { icon: Phone, label: ETUDIANT.telephone, href: `tel:${ETUDIANT.telephone}`, color: 'bg-emerald-50 text-emerald-500' },
                 { icon: MapPin, label: ETUDIANT.adresse, color: 'bg-slate-100 text-slate-500' },
-                { icon: Calendar, label: `Né(e) le ${ETUDIANT.dateNaissance}`, color: 'bg-violet-50 text-violet-500' },
+                { icon: Calendar, label: `Né(e) le ${ETUDIANT.dateNaissance}`, color: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' },
                 { icon: GraduationCap, label: `Inscrit(e) le ${ETUDIANT.dateInscription}`, color: 'bg-yellow-50 text-yellow-600' },
               ].map(({ icon: Icon, label, href, color }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -245,23 +245,23 @@ export default function AdminEtudiantDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Note interne admin */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
-                <MessageSquare size={13} className="text-violet-600" />
+          <div className="bg-white rounded-md border border-[#e5e5e5] p-4">
+            <div className="flex items-center gap-2 mb-2.5">
+              <div className="w-6 h-6 rounded bg-[#f5f5f5] flex items-center justify-center">
+                <MessageSquare size={13} className="text-[#171717]" />
               </div>
-              <h3 className="font-bold text-slate-900 text-sm">Note interne</h3>
+              <h3 className="font-semibold text-[#171717] text-xs">Note interne</h3>
             </div>
             <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="Ajouter une note confidentielle sur cet étudiant..."
               rows={3}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-300 transition-all resize-none"
+              className="w-full bg-[#fafafa] border border-[#e5e5e5] rounded-md px-3 py-2 text-xs text-[#171717] placeholder:text-[#a3a3a3] outline-none focus:border-[#171717] transition-all resize-none"
             />
             <button
               disabled={!note.trim()}
-              className="mt-2 w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-200 disabled:cursor-not-allowed text-white text-xs font-bold py-2 rounded-xl transition-colors"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 bg-[#171717] hover:bg-[#262626] disabled:bg-[#e5e5e5] disabled:cursor-not-allowed text-white text-xs font-medium py-2 rounded-md transition-colors cursor-pointer"
             >
               <Send size={12} /> Enregistrer la note
             </button>
@@ -369,9 +369,9 @@ export default function AdminEtudiantDetailPage({ params }: { params: Promise<{ 
                     <p className="text-2xl font-black text-blue-700">{ETUDIANT.creditsValides}</p>
                     <p className="text-xs text-blue-600 font-medium mt-0.5">Crédits validés</p>
                   </div>
-                  <div className="bg-violet-50 rounded-xl p-3 border border-violet-100 text-center">
-                    <p className="text-2xl font-black text-violet-700">Bien</p>
-                    <p className="text-xs text-violet-600 font-medium mt-0.5">Mention globale</p>
+                  <div className="bg-[#f5f5f5] rounded-md p-3 border border-[#e5e5e5] text-center">
+                    <p className="text-2xl font-bold font-mono text-[#171717]">Bien</p>
+                    <p className="text-xs text-[#737373] font-medium mt-0.5">Mention globale</p>
                   </div>
                 </div>
 
@@ -450,27 +450,27 @@ export default function AdminEtudiantDetailPage({ params }: { params: Promise<{ 
             )}
           </div>
 
-          {/* Widget IA */}
-          <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 text-white shadow-lg shadow-violet-500/20">
+          {/* Widget IA (Style Vercel Dark Card) */}
+          <div className="bg-[#171717] dark:bg-[#121215] border border-[#262626] dark:border-[#27272a] rounded-xl p-5 text-white shadow-xs">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Award size={16} className="text-violet-200" />
-                  <h3 className="font-bold text-sm">Analyse IA — Profil étudiant</h3>
+                  <Award size={15} className="text-white" />
+                  <h3 className="font-semibold text-xs text-white uppercase tracking-wider">Analyse IA — Profil académique</h3>
                 </div>
-                <p className="text-xs text-violet-100 leading-relaxed mb-3">
-                  NGUENOU Wilfried présente un profil <strong>académiquement solide</strong> (moy. 14.7/20).
+                <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
+                  {ETUDIANT.nom} présente un profil <strong className="text-white font-medium">académiquement solide</strong> (moy. {ETUDIANT.moyenneGenerale}/20).
                   Le litige sur la note de Mathématiques est le seul point bloquant.
-                  Risque d&apos;abandon : <strong>Faible</strong>. Engagement : <strong>Élevé</strong>.
+                  Risque d&apos;abandon : <strong className="text-white font-medium">Faible</strong>.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Engagement ↑</div>
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Note litigée ⚠</div>
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Boursier ✓</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Engagement ↑</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Note litigée ⚠</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Boursier ✓</div>
                 </div>
               </div>
-              <div className="bg-white/20 rounded-2xl p-3 shrink-0">
-                <TrendingUp size={28} className="text-white" />
+              <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">
+                <TrendingUp size={20} className="text-white" />
               </div>
             </div>
           </div>

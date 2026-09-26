@@ -70,7 +70,7 @@ export const requestSchema = z.object({
   
   // Métadonnées
   tags: z.array(z.string()).nullable().optional(),
-  metadata: z.record(z.any()).nullable().optional(),
+  metadata: z.record(z.string(), z.any()).nullable().optional(),
   created_at: z.string().datetime().optional(),
   updated_at: z.string().datetime().optional(),
 });
@@ -82,7 +82,7 @@ export const createRequestSchema = z.object({
   title: z.string().min(5, 'Le titre doit contenir au moins 5 caractères').max(255),
   description: z.string().min(10, 'La description doit contenir au moins 10 caractères'),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Schéma pour mettre à jour une requête
@@ -94,7 +94,7 @@ export const updateRequestSchema = z.object({
   title: z.string().min(5).max(255).optional(),
   description: z.string().min(10).optional(),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Schéma pour assigner une requête

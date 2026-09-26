@@ -2,49 +2,32 @@
 
 import { useState } from 'react';
 import {
-  FileText, Search, Clock, CheckCircle, XCircle, Eye,
-  ChevronLeft, ChevronRight, Filter, Calendar, AlertCircle,
-  RefreshCw, Home, PlusCircle, Loader2
+  FileText, Search, Clock, CheckCircle, Eye,
+  ChevronLeft, ChevronRight, Filter, Calendar,
+  Plus, Loader2, FileCheck, Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import StudentLayout from '../components/StudentLayout';
 import { useStudent, useStudentRequests } from '@/lib/hooks';
+import OfficialDocumentModal from '@/components/OfficialDocumentModal';
 
 const STATUTS = ['Tous', 'En attente', 'En cours', 'Résolue', 'Rejetée'];
-
-const statutStyle: Record<string, string> = {
-  'En attente': 'bg-blue-100 text-blue-700 border-blue-200',
-  'En cours': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  'Résolue': 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  'Rejetée': 'bg-red-100 text-red-700 border-red-200',
-};
-
-const prioriteStyle: Record<string, string> = {
-  'Basse': 'bg-gray-100 text-gray-700',
-  'Moyenne': 'bg-yellow-100 text-yellow-700',
-  'Haute': 'bg-red-100 text-red-700',
-};
-
 const PAGE_SIZE = 10;
 
-// Fonction pour formater la date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-  return date.toLocaleDateString('fr-FR', options);
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
 function MesRequetesContent() {
   const [search, setSearch] = useState('');
   const [statut, setStatut] = useState('Tous');
   const [page, setPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
 
-  // Récupérer les données
   const { student, loading: studentLoading } = useStudent();
   const { requests, stats, loading: requestsLoading, error } = useStudentRequests(student?.id);
 
-  // Filtrer les requêtes
   let filtered = requests.filter((r) => {
     const q = search.toLowerCase();
     const matchSearch = !q || r.reference.toLowerCase().includes(q) || r.title.toLowerCase().includes(q);
@@ -52,235 +35,254 @@ function MesRequetesContent() {
     return matchSearch && matchStatut;
   });
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Créer les stats pour les cartes
-  const STATS = [
-    { label: 'Total', value: stats.total, icon: FileText, color: 'bg-emerald-50 text-emerald-600 border border-emerald-100' },
-    { label: 'En attente', value: stats.pending, icon: Clock, color: 'bg-blue-50 text-blue-600 border border-blue-100' },
-    { label: 'En cours', value: stats.in_progress, icon: RefreshCw, color: 'bg-yellow-50 text-yellow-600 border border-yellow-100' },
-    { label: 'Résolues', value: stats.resolved, icon: CheckCircle, color: 'bg-green-50 text-green-600 border border-green-100' },
-  ];
-
-  // Afficher un loader
   if (studentLoading || requestsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-emerald-600 mx-auto mb-4" />
-          <p className="text-slate-600 font-medium">Chargement de vos requêtes...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Afficher une erreur
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-          <p className="text-slate-900 font-bold text-lg mb-2">Erreur de chargement</p>
-          <p className="text-slate-600">{error}</p>
+          <Loader2 className="w-8 h-8 animate-spin text-zinc-950 mx-auto mb-3" />
+          <p className="text-zinc-500 text-xs font-mono">Chargement de vos requêtes...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-5">
-      <div className="max-w-6xl mx-auto space-y-5">
-
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Link href="/dashboard" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
-            <Home size={14} />
-            Tableau de bord
-          </Link>
-          <ChevronRight size={12} />
-          <span className="text-slate-900 font-medium">Mes requêtes</span>
-        </div>
-
-        {/* En-tête */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-slate-900">Mes requêtes</h1>
-            <p className="text-slate-500 text-sm mt-0.5">Consultez et suivez l'état de vos demandes.</p>
+    <div className="p-4 sm:p-8 space-y-6 max-w-7xl mx-auto">
+      
+      {/* En-tête */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+              Registres Académiques & Administratifs
+            </span>
           </div>
-          <Link 
-            href="/nouvelle-requete"
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
-          >
-            <PlusCircle size={16} />
-            Nouvelle requête
-          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-950">
+            Mes requêtes & demandes
+          </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Suivi en temps réel de vos démarches, délais d'instruction et attestations officielles.
+          </p>
         </div>
 
-        {/* Stats - Améliorées */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {STATS.map(({ label, value, icon: Icon, color }) => (
+        <Link
+          href="/nouvelle-requete"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black hover:bg-zinc-800 text-white font-bold text-xs transition-colors shadow-2xs"
+        >
+          <Plus size={14} />
+          Nouvelle requête
+        </Link>
+      </div>
+
+      {/* KPI Stats Minimalistes Black & White */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[
+          { label: 'Total', count: stats.total, filter: 'Tous' },
+          { label: 'Résolues', count: stats.resolved, filter: 'Résolue' },
+          { label: 'En cours', count: stats.in_progress, filter: 'En cours' },
+          { label: 'En attente', count: stats.pending, filter: 'En attente' },
+        ].map((item) => {
+          const isActive = statut === item.filter;
+          return (
             <button
-              key={label}
-              onClick={() => { setStatut(label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label); setPage(1); }}
-              className={`bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 text-left group ${
-                statut === (label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label) 
-                  ? 'ring-2 ring-emerald-500 scale-[1.02]' 
-                  : 'hover:scale-[1.02]'
+              key={item.label}
+              onClick={() => { setStatut(item.filter); setPage(1); }}
+              className={`p-4 rounded-xl border text-left transition-all ${
+                isActive
+                  ? 'bg-black text-white border-black shadow-xs'
+                  : 'bg-white text-zinc-900 border-zinc-200 hover:border-zinc-300'
               }`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform`}>
-                  <Icon size={22} strokeWidth={2.5} />
-                </div>
-                {statut === (label === 'Total' ? 'Tous' : label === 'Résolues' ? 'Résolue' : label) && (
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                )}
-              </div>
-              <p className="text-3xl font-black text-slate-900 mb-1">{value}</p>
-              <p className="text-sm text-slate-600 font-semibold">{label}</p>
+              <p className={`text-[10px] font-mono uppercase tracking-wider ${isActive ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                {item.label}
+              </p>
+              <p className="text-2xl font-extrabold font-mono mt-1">
+                {item.count}
+              </p>
             </button>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
-        {/* Recherche et filtres - Améliorés */}
-        <div className="bg-white rounded-2xl shadow-sm p-5 space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[250px]">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <input
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Rechercher par référence ou titre..."
-                className="w-full h-12 bg-slate-50 rounded-xl pl-12 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all"
-              />
-            </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 h-12 px-5 rounded-xl text-sm font-bold transition-all shadow-sm ${
-                showFilters 
-                  ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              <Filter size={18} />
-              Filtres
-              {showFilters && <span className="text-xs">(✓)</span>}
-            </button>
+      {/* Barre de recherche et filtres de statuts */}
+      <div className="bg-white rounded-xl border border-zinc-200 p-4 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Rechercher par référence (ex: REQ-2026-0001) ou par mot-clé..."
+              className="w-full h-10 pl-9 pr-4 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-black focus:bg-white transition-all font-sans"
+            />
           </div>
 
-          {showFilters && (
-            <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-              <p className="text-xs font-bold text-slate-600 w-full mb-1">Filtrer par statut :</p>
-              {STATUTS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => { setStatut(s); setPage(1); }}
-                  className={`text-sm px-4 py-2 rounded-xl font-bold transition-all shadow-sm ${
-                    statut === s 
-                      ? 'bg-emerald-600 text-white scale-105' 
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:scale-105'
-                  }`}
+          {/* Onglets de filtrage */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            {STATUTS.map((s) => (
+              <button
+                key={s}
+                onClick={() => { setStatut(s); setPage(1); }}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                  statut === s
+                    ? 'bg-zinc-900 text-white'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Liste des requêtes (Tableau épuré) */}
+      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-2xs">
+        {paginated.length === 0 ? (
+          <div className="p-12 text-center text-zinc-400 space-y-2">
+            <FileText size={32} className="mx-auto text-zinc-300" />
+            <p className="text-sm font-semibold text-zinc-700">Aucune demande trouvée</p>
+            <p className="text-xs text-zinc-400">
+              Modifiez votre recherche ou réinitialisez les filtres.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-zinc-100">
+            {paginated.map((r) => {
+              const isResolved = r.status.name === 'Résolue';
+              const hasDoc = (r as any).metadata?.document_code;
+
+              return (
+                <div
+                  key={r.id}
+                  className="p-4 sm:px-6 hover:bg-zinc-50/70 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Liste des requêtes */}
-        <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-          {paginated.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <FileText size={40} className="mb-3 opacity-30" />
-              <p className="font-semibold text-slate-500">Aucune requête trouvée</p>
-              <p className="text-sm mt-1">Modifiez vos filtres ou créez une nouvelle requête.</p>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {paginated.map((r) => (
-                <div key={r.id} className="p-4 hover:bg-slate-50 transition-colors">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                          <FileText size={18} className="text-slate-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-bold text-slate-900">{r.title}</h3>
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${statutStyle[r.status.name]}`}>
-                              {r.status.name}
-                            </span>
-                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${prioriteStyle[r.priority.name]}`}>
-                              {r.priority.name}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                            <span className="font-mono">{r.reference}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Calendar size={11} />
-                              {formatDate(r.submitted_at)}
-                            </span>
-                            <span>•</span>
-                            <span className="bg-slate-100 px-2 py-0.5 rounded">{r.category.name}</span>
-                          </div>
-                          <p className="text-xs text-slate-600 mt-2 line-clamp-2">{r.description}</p>
-                        </div>
-                      </div>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-xs font-bold text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+                        {r.reference}
+                      </span>
+                      <span className={`text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${
+                        isResolved
+                          ? 'bg-black text-white border-black'
+                          : 'bg-zinc-100 text-zinc-800 border-zinc-200'
+                      }`}>
+                        {r.status.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-zinc-500 bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded">
+                        {r.category?.name || 'Catégorie'}
+                      </span>
+                      {hasDoc && (
+                        <span className="text-[10px] font-mono font-bold text-zinc-900 bg-zinc-100 border border-zinc-300 px-2 py-0.5 rounded flex items-center gap-1">
+                          <Zap size={11} /> Certificat prêt
+                        </span>
+                      )}
                     </div>
-                    <Link 
+
+                    <Link
                       href={`/mes-requetes/${r.id}`}
-                      className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 font-semibold transition-colors"
+                      className="block text-sm font-bold text-zinc-900 hover:text-black transition-colors"
                     >
-                      <Eye size={14} />
+                      {r.title}
+                    </Link>
+
+                    <p className="text-xs text-zinc-500 line-clamp-1">
+                      {r.description}
+                    </p>
+
+                    <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-400">
+                      <span className="flex items-center gap-1">
+                        <Calendar size={11} />
+                        {formatDate(r.submitted_at)}
+                      </span>
+                      <span>•</span>
+                      <span>Priorité : {r.priority.name}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {hasDoc && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDoc(r)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black hover:bg-zinc-800 text-white rounded-lg text-xs font-bold transition-colors"
+                        title="Consulter et imprimer le document certifié"
+                      >
+                        <FileCheck size={13} />
+                        Document
+                      </button>
+                    )}
+                    <Link
+                      href={`/mes-requetes/${r.id}`}
+                      className="px-3 py-1.5 bg-white hover:bg-zinc-100 text-zinc-800 border border-zinc-200 rounded-lg text-xs font-semibold transition-colors"
+                    >
                       Détails
                     </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
+        )}
 
-          {paginated.length > 0 && (
-            <div className="flex items-center justify-between px-5 py-3.5 border-t bg-slate-50/50">
-              <p className="text-xs text-slate-500">
-                Affichage <span className="font-bold">{(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)}</span> sur <span className="font-bold">{filtered.length}</span>
-              </p>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center text-slate-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setPage(n)}
-                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                      page === n ? 'bg-emerald-600 text-white' : 'border text-slate-600 hover:bg-white'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="w-8 h-8 rounded-lg border flex items-center justify-center text-slate-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
+        {/* Pagination */}
+        {filtered.length > PAGE_SIZE && (
+          <div className="px-6 py-3.5 border-t border-zinc-100 bg-zinc-50/50 flex items-center justify-between text-xs text-zinc-500">
+            <span>
+              Page {page} sur {totalPages} ({filtered.length} résultats)
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="w-8 h-8 rounded-lg border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="w-8 h-8 rounded-lg border border-zinc-200 bg-white flex items-center justify-center text-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-50"
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
-          )}
-        </div>
-
+          </div>
+        )}
       </div>
+
+      {/* Modal du document certifié */}
+      {selectedDoc && (
+        <OfficialDocumentModal
+          isOpen={!!selectedDoc}
+          onClose={() => setSelectedDoc(null)}
+          document={{
+            type: 'attestation',
+            title: selectedDoc.title,
+            code: selectedDoc.metadata?.document_code || 'CERT-IUC-2026',
+            date: new Date(selectedDoc.resolved_at || selectedDoc.submitted_at).toLocaleDateString('fr-FR', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            }),
+            requesterName: `${student?.first_name} ${student?.last_name}`,
+            matricule: student?.matricule || 'N/A',
+            programOrFunction:
+              student?.role_code === 'enseignant'
+                ? (student?.fonction || 'Enseignant - IUC')
+                : student?.role_code === 'personnel'
+                ? (student?.fonction || 'Personnel Administratif')
+                : `${student?.filiere || 'Génie Logiciel'} (${student?.niveau || 'L3'})`,
+            academicYear: student?.annee_academique || '2025-2026',
+          }}
+        />
+      )}
+
     </div>
   );
 }

@@ -36,7 +36,7 @@ export const aiSuggestionSchema = z.object({
   description: z.string().min(1),
   impact: z.string().nullable().optional(),
   recommended_action: z.string().nullable().optional(),
-  metadata: z.record(z.any()).nullable().optional(),
+  metadata: z.record(z.string(), z.any()).nullable().optional(),
   created_at: z.string().datetime().optional(),
   updated_at: z.string().datetime().optional(),
 });
@@ -49,7 +49,7 @@ export const createSuggestionSchema = z.object({
   description: z.string().min(1),
   impact: z.string().optional(),
   recommended_action: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Schéma pour mettre à jour le statut d'une suggestion
@@ -63,7 +63,7 @@ export const aiResponseTemplateSchema = z.object({
   category_id: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(100),
   template: z.string().min(1),
-  variables: z.record(z.any()).nullable().optional(),
+  variables: z.record(z.string(), z.any()).nullable().optional(),
   usage_count: z.number().int().default(0),
   is_active: z.boolean().default(true),
   created_at: z.string().datetime().optional(),
@@ -75,7 +75,7 @@ export const createTemplateSchema = z.object({
   category_id: z.string().uuid().optional(),
   name: z.string().min(1).max(100),
   template: z.string().min(1),
-  variables: z.record(z.any()).optional(),
+  variables: z.record(z.string(), z.any()).optional(),
 });
 
 // Schéma des notifications
@@ -131,7 +131,7 @@ export const activityLogSchema = z.object({
   description: z.string().nullable().optional(),
   ip_address: z.string().nullable().optional(),
   user_agent: z.string().nullable().optional(),
-  metadata: z.record(z.any()).nullable().optional(),
+  metadata: z.record(z.string(), z.any()).nullable().optional(),
   created_at: z.string().datetime().optional(),
 });
 
@@ -141,7 +141,7 @@ export const createActivityLogSchema = z.object({
   entity_type: z.string().max(50).optional(),
   entity_id: z.string().uuid().optional(),
   description: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Schéma des statistiques quotidiennes

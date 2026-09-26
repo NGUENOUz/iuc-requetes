@@ -54,9 +54,9 @@ export async function POST(
     }
 
     // Parser et valider
-    const body = await parseRequestBody(request);
+    const body: any = await parseRequestBody(request);
     const validatedData = createCommentSchema.parse({
-      ...body,
+      ...(body || {}),
       request_id: id,
     });
 

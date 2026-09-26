@@ -16,6 +16,7 @@ export interface AuthenticatedUser {
     id: string;
     name: string;
     description?: string;
+    permissions?: string[];
   };
   service_id?: string;
   is_active: boolean;
@@ -142,7 +143,7 @@ export async function requirePermission(request: NextRequest, requiredPermission
     return { error, user: null };
   }
 
-  if (!user || !user.role.permissions.includes(requiredPermission)) {
+  if (!user || !user.role.permissions?.includes(requiredPermission)) {
     return {
       error: errorResponse(
         'Vous n\'avez pas la permission nécessaire.',

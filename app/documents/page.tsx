@@ -1,295 +1,246 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, FileText, Download, Eye, Search, Filter,
-  Calendar, CheckCircle, Clock, AlertCircle, Home, File,
-  FileCheck, Award, Folder
+  FileText, Search,
+  Calendar, CheckCircle, Home,
+  FileCheck, ShieldCheck, QrCode, Eye, Printer, ArrowRight
 } from 'lucide-react';
 import StudentLayout from '../components/StudentLayout';
+import OfficialDocumentModal from '@/components/OfficialDocumentModal';
 
-const DOCUMENTS = [
+const DEFAULT_DOCUMENTS = [
   {
-    id: 1,
+    id: 'doc-1',
+    code: 'CERT-IUC-2026-9812',
     type: 'attestation',
-    titre: 'Attestation de scolarité 2024-2025',
-    description: 'Attestation certifiant votre inscription pour l\'année académique en cours',
-    date: '15 mai 2025',
-    taille: '245 KB',
+    titre: 'Attestation de scolarité officielle 2025-2026',
+    description: 'Document certifié avec QR Code attestant l\'inscription régulière pour l\'année académique',
+    date: '24 mars 2026',
+    taille: '185 KB',
     statut: 'disponible',
     categorie: 'Scolarité',
+    requesterName: 'Kevin Fotso',
+    matricule: '22IUC01452',
+    programOrFunction: 'L3 Génie Logiciel',
+    academicYear: '2025-2026',
   },
   {
-    id: 2,
+    id: 'doc-2',
+    code: 'REL-IUC-2026-004',
     type: 'releve',
-    titre: 'Relevé de notes - Semestre 1',
-    description: 'Relevé de notes du premier semestre 2024-2025',
-    date: '10 mai 2025',
+    titre: 'Relevé de notes officiel - Semestre 4',
+    description: 'Relevé de notes semestriel certifié avec mention des crédits validés',
+    date: '21 mars 2026',
     taille: '312 KB',
     statut: 'disponible',
     categorie: 'Notes',
+    requesterName: 'Audrey Talla',
+    matricule: '23IUC02981',
+    programOrFunction: 'L2 Réseaux & Télécoms',
+    academicYear: '2025-2026',
   },
   {
-    id: 3,
+    id: 'doc-3',
+    code: 'ATT-TRAV-2026-4410',
     type: 'attestation',
-    titre: 'Attestation d\'inscription',
-    description: 'Attestation d\'inscription pour l\'année 2024-2025',
-    date: '05 mai 2025',
-    taille: '198 KB',
+    titre: 'Attestation de travail & Prise de service',
+    description: 'Attestation officielle pour membre du corps enseignant et personnel de l\'IUC',
+    date: '25 mars 2026',
+    taille: '190 KB',
     statut: 'disponible',
-    categorie: 'Scolarité',
-  },
-  {
-    id: 4,
-    type: 'certificat',
-    titre: 'Certificat de réussite - Licence 2',
-    description: 'Certificat de réussite niveau Licence 2',
-    date: '28 avril 2025',
-    taille: '456 KB',
-    statut: 'disponible',
-    categorie: 'Diplômes',
-  },
-  {
-    id: 5,
-    type: 'releve',
-    titre: 'Relevé de notes - Semestre 2 (2023-2024)',
-    description: 'Relevé de notes du deuxième semestre 2023-2024',
-    date: '20 avril 2025',
-    taille: '298 KB',
-    statut: 'disponible',
-    categorie: 'Notes',
-  },
-  {
-    id: 6,
-    type: 'attestation',
-    titre: 'Attestation de non-exclusion',
-    description: 'Attestation certifiant la non-exclusion disciplinaire',
-    date: '12 avril 2025',
-    taille: '187 KB',
-    statut: 'en_attente',
-    categorie: 'Scolarité',
-  },
+    categorie: 'RH & Personnel',
+    requesterName: 'Mme Nicole Bilong',
+    matricule: 'ENS-108',
+    programOrFunction: 'Enseignante Vacataire (Algorithmique & BD)',
+    academicYear: '2025-2026',
+  }
 ];
 
-const CATEGORIES = ['Tous', 'Scolarité', 'Notes', 'Diplômes'];
+const CATEGORIES = ['Tous', 'Scolarité', 'Notes', 'RH & Personnel'];
 
-const typeIcon = {
-  attestation: FileCheck,
-  releve: FileText,
-  certificat: Award,
-};
-
-const typeColor = {
-  attestation: { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'text-blue-500' },
-  releve: { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'text-purple-500' },
-  certificat: { bg: 'bg-emerald-50', text: 'text-emerald-600', icon: 'text-emerald-500' },
-};
-
-const statutStyle = {
-  disponible: { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: CheckCircle },
-  en_attente: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
-};
-
-function DocumentsContent() {
+export default function DocumentsPage() {
   const [search, setSearch] = useState('');
   const [categorie, setCategorie] = useState('Tous');
+  const [documents, setDocuments] = useState(DEFAULT_DOCUMENTS);
+  const [selectedDoc, setSelectedDoc] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filtered = DOCUMENTS.filter(doc => {
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('iuc_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        setDocuments(prev => prev.map(doc => {
+          if (doc.type === 'attestation') {
+            return {
+              ...doc,
+              requesterName: `${u.first_name} ${u.last_name}`,
+              matricule: u.matricule || doc.matricule,
+              programOrFunction: u.filiere || u.fonction || doc.programOrFunction,
+            };
+          }
+          return doc;
+        }));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const handleOpenDoc = (doc: any) => {
+    setSelectedDoc(doc);
+    setIsModalOpen(true);
+  };
+
+  const filtered = documents.filter(doc => {
     const matchSearch = !search || 
       doc.titre.toLowerCase().includes(search.toLowerCase()) ||
-      doc.description.toLowerCase().includes(search.toLowerCase());
+      doc.description.toLowerCase().includes(search.toLowerCase()) ||
+      doc.code.toLowerCase().includes(search.toLowerCase());
     const matchCategorie = categorie === 'Tous' || doc.categorie === categorie;
     return matchSearch && matchCategorie;
   });
 
-  const stats = {
-    total: DOCUMENTS.length,
-    disponibles: DOCUMENTS.filter(d => d.statut === 'disponible').length,
-    en_attente: DOCUMENTS.filter(d => d.statut === 'en_attente').length,
-  };
-
   return (
-    <div className="p-3 sm:p-6 space-y-5">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500">
-        <Link href="/dashboard" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
-          <Home size={14} />
-          Tableau de bord
-        </Link>
-        <span>/</span>
-        <span className="text-slate-900 font-medium">Documents</span>
-      </div>
+    <StudentLayout>
+      <div className="p-4 sm:p-8 space-y-6 max-w-6xl mx-auto">
+        
+        {/* Navigation fil d'Ariane */}
+        <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <Link href="/dashboard" className="hover:text-black transition-colors flex items-center gap-1">
+            <Home size={13} />
+            Portail
+          </Link>
+          <span>/</span>
+          <span className="text-zinc-900 font-bold">Coffre-fort & Certificats</span>
+        </div>
 
-      {/* Bouton retour */}
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-emerald-600 font-medium transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Retour au tableau de bord
-      </Link>
-
-      {/* En-tête */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-500 rounded-2xl p-6 text-white">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-            <Folder size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black">Mes documents</h1>
-            <p className="text-blue-100 text-sm">Téléchargez vos attestations, relevés et certificats</p>
+        {/* En-tête Monochrome */}
+        <div className="bg-[#09090b] text-white rounded-xl p-6 sm:p-8 border border-zinc-800 shadow-sm relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2 max-w-xl">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-widest bg-zinc-800 text-zinc-300 border border-zinc-700">
+                <ShieldCheck size={13} />
+                Documents Officiels Authentifiés
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                Coffre-fort Numérique & Certificats
+              </h1>
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                Tous les documents délivrés par l'IUC comportent une signature numérique scellée et un QR Code de vérification infalsifiable vérifiable par les autorités, consulats et universités partenaires.
+              </p>
+            </div>
+            
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center shrink-0 min-w-[120px]">
+              <p className="text-2xl font-bold font-mono text-white">{documents.length}</p>
+              <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Certificats</p>
+            </div>
           </div>
         </div>
 
-        {/* Statistiques */}
-        <div className="grid grid-cols-3 gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-          <div className="text-center">
-            <p className="text-2xl font-black">{stats.total}</p>
-            <p className="text-xs text-blue-100">Total</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-black">{stats.disponibles}</p>
-            <p className="text-xs text-blue-100">Disponibles</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-black">{stats.en_attente}</p>
-            <p className="text-xs text-blue-100">En attente</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Recherche et filtres */}
-      <div className="bg-white rounded-2xl border shadow-sm p-4 space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        {/* Barre de recherche & Filtres */}
+        <div className="bg-white rounded-xl border border-zinc-200 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
             <input
+              type="text"
+              placeholder="Rechercher par titre ou référence QR (ex: CERT-IUC)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un document..."
-              className="w-full h-10 bg-slate-50 rounded-xl pl-9 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition-all font-sans"
             />
           </div>
-        </div>
 
-        <div className="flex flex-wrap gap-2 pt-1 border-t">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategorie(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                categorie === cat
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Liste des documents */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filtered.length === 0 ? (
-          <div className="col-span-2 bg-white rounded-2xl border shadow-sm p-12 text-center">
-            <File size={48} className="mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500 font-semibold">Aucun document trouvé</p>
-            <p className="text-sm text-slate-400 mt-1">Modifiez vos filtres ou effectuez une autre recherche.</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategorie(cat)}
+                type="button"
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  categorie === cat
+                    ? 'bg-black text-white shadow-2xs'
+                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
-        ) : (
-          filtered.map((doc) => {
-            const Icon = typeIcon[doc.type as keyof typeof typeIcon];
-            const colors = typeColor[doc.type as keyof typeof typeColor];
-            const StatutIcon = statutStyle[doc.statut as keyof typeof statutStyle].icon;
-            const statutColors = statutStyle[doc.statut as keyof typeof statutStyle];
+        </div>
 
+        {/* Grille des documents */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filtered.map((doc) => {
             return (
-              <div key={doc.id} className="bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all">
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
-                    {/* Icône du type */}
-                    <div className={`w-12 h-12 rounded-xl ${colors.bg} flex items-center justify-center shrink-0`}>
-                      <Icon size={24} className={colors.icon} />
-                    </div>
-
-                    {/* Contenu */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-slate-900 text-sm">{doc.titre}</h3>
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0 ${statutColors.bg} ${statutColors.text}`}>
-                          <StatutIcon size={10} />
-                          {doc.statut === 'disponible' ? 'Disponible' : 'En attente'}
+              <div
+                key={doc.id}
+                className="bg-white rounded-xl border border-zinc-200 p-5 shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-2.5">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-mono text-xs font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+                          {doc.code}
+                        </span>
+                        <span className="text-[10px] font-mono uppercase bg-zinc-100 text-zinc-800 border border-zinc-200 px-1.5 py-0.2 rounded font-bold flex items-center gap-1">
+                          <CheckCircle size={10} /> Validé
                         </span>
                       </div>
-                      
-                      <p className="text-xs text-slate-600 mb-3">{doc.description}</p>
-
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mb-3">
-                        <span className="flex items-center gap-1">
-                          <Calendar size={11} />
-                          {doc.date}
-                        </span>
-                        <span>•</span>
-                        <span>{doc.taille}</span>
-                        <span>•</span>
-                        <span className="bg-slate-100 px-2 py-0.5 rounded">{doc.categorie}</span>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        {doc.statut === 'disponible' ? (
-                          <>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors">
-                              <Download size={12} />
-                              Télécharger
-                            </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">
-                              <Eye size={12} />
-                              Aperçu
-                            </button>
-                          </>
-                        ) : (
-                          <div className="flex items-center gap-2 text-xs text-yellow-700">
-                            <AlertCircle size={14} />
-                            <span>Document en cours de génération</span>
-                          </div>
-                        )}
-                      </div>
+                      <h3 className="font-bold text-zinc-900 text-sm">{doc.titre}</h3>
                     </div>
                   </div>
+
+                  <p className="text-xs text-zinc-500 mb-4 leading-relaxed">{doc.description}</p>
+
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono text-zinc-400 mb-4">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={11} />
+                      {doc.date}
+                    </span>
+                    <span>•</span>
+                    <span>{doc.taille}</span>
+                    <span>•</span>
+                    <span className="bg-zinc-50 border border-zinc-200 px-1.5 py-0.2 rounded text-zinc-600">{doc.categorie}</span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-100 flex items-center gap-2">
+                  <button
+                    onClick={() => handleOpenDoc(doc)}
+                    type="button"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-black hover:bg-zinc-800 text-white font-bold text-xs rounded-lg transition-colors"
+                  >
+                    <Printer size={13} />
+                    Visualiser & Imprimer
+                  </button>
+                  <Link
+                    href={`/verify/${doc.code}`}
+                    target="_blank"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 font-semibold text-xs rounded-lg transition-colors"
+                  >
+                    <QrCode size={13} />
+                    Contrôle QR
+                  </Link>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
-
-      {/* Aide */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
-        <div className="flex items-start gap-3">
-          <AlertCircle size={20} className="text-blue-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold text-blue-900 mb-1">Besoin d'un document ?</p>
-            <p className="text-sm text-blue-700">
-              Si vous ne trouvez pas un document dont vous avez besoin, vous pouvez faire une demande via{' '}
-              <Link href="/nouvelle-requete" className="font-bold underline hover:text-blue-800">
-                une nouvelle requête
-              </Link>
-              .
-            </p>
-          </div>
+          })}
         </div>
-      </div>
-    </div>
-  );
-}
 
-export default function DocumentsPage() {
-  return (
-    <StudentLayout>
-      <DocumentsContent />
+      </div>
+
+      {/* Modal du document officiel certifié */}
+      {selectedDoc && (
+        <OfficialDocumentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          document={selectedDoc}
+        />
+      )}
     </StudentLayout>
   );
 }

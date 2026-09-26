@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
 
 
     console.log('[1/5] 📥 Parsing body...');
-    const body = await parseRequestBody(request);
-    const { message, context } = body;
+    const body: any = await parseRequestBody(request);
+    const { message, context } = body || {};
 
     if (!message) {
       return errorResponse(
@@ -98,8 +98,8 @@ export async function POST(request: NextRequest) {
     console.error('❌ [Erreur Gemini]:' , error.message);
     console.log('🔄 [FALLBACK] Utilisation du mode secours');
     
-    const body = await parseRequestBody(request);
-    return getFallbackResponse(body.message);
+    const body: any = await parseRequestBody(request).catch(() => ({}));
+    return getFallbackResponse(body?.message || '');
   }
 }
 
@@ -217,7 +217,7 @@ async function getPendingStatusIds(): Promise<string[]> {
     .select('id')
     .in('name', ['Soumise', 'En attente', 'Assignée', 'En cours']);
   
-  return data?.map(s => s.id) || [];
+  return data?.map((s: any) => s.id) || [];
 }
 
 async function getStudentRoleId(): Promise<string> {

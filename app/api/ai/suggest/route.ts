@@ -189,7 +189,7 @@ async function analyzeSystemData() {
       .not('resolution_time_hours', 'is', null);
 
     const avgResolutionTime = resolvedWithTime && resolvedWithTime.length > 0
-      ? resolvedWithTime.reduce((acc, r) => acc + (r.resolution_time_hours || 0), 0) / resolvedWithTime.length
+      ? resolvedWithTime.reduce((acc: number, r: any) => acc + (r.resolution_time_hours || 0), 0) / resolvedWithTime.length
       : 0;
 
     // Charge de travail des agents
@@ -203,7 +203,7 @@ async function analyzeSystemData() {
       .is('resolved_at', null);
 
     const workloadByAgent: Record<string, any> = {};
-    agentWorkload?.forEach(req => {
+    agentWorkload?.forEach((req: any) => {
       const agentId = req.assigned_to;
       if (!agentId) return;
       
@@ -225,7 +225,7 @@ async function analyzeSystemData() {
       `);
 
     const serviceDistribution: Record<string, number> = {};
-    serviceData?.forEach(req => {
+    serviceData?.forEach((req: any) => {
       const serviceName = req.services?.name || 'Non assigné';
       serviceDistribution[serviceName] = (serviceDistribution[serviceName] || 0) + 1;
     });

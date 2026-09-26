@@ -31,19 +31,19 @@ const DEPARTEMENTS  = ['Tous', 'Scolarité', 'Finance', 'Pédagogie', 'Direction
 const STATUTS_AGENT = ['Tous', 'Disponible', 'Occupé', 'En congé'];
 
 const statutStyle: Record<string, string> = {
-  'Disponible': 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
-  'Occupé':     'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200',
-  'En congé':   'bg-blue-100 text-blue-700 ring-1 ring-blue-200',
+  'Disponible': 'bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]',
+  'Occupé':     'bg-[#171717] text-white border border-[#171717]',
+  'En congé':   'bg-[#fafafa] text-[#737373] border border-[#e5e5e5]',
 };
 const statutDot: Record<string, string> = {
-  'Disponible': 'bg-emerald-500',
-  'Occupé':     'bg-yellow-500',
-  'En congé':   'bg-blue-400',
+  'Disponible': 'bg-[#171717]',
+  'Occupé':     'bg-[#737373]',
+  'En congé':   'bg-[#d4d4d4]',
 };
 const roleStyle: Record<string, string> = {
-  'Agent':          'bg-slate-100 text-slate-700',
-  'Superviseur':    'bg-violet-100 text-violet-700',
-  'Administrateur': 'bg-amber-100 text-amber-700',
+  'Agent':          'bg-[#f5f5f5] text-[#525252] border border-[#e5e5e5] font-mono text-[11px]',
+  'Superviseur':    'bg-[#171717] text-white font-mono text-[11px]',
+  'Administrateur': 'bg-[#171717] text-white font-mono text-[11px]',
 };
 const roleIcon: Record<string, React.ReactNode> = {
   'Agent':          <UserCog size={11} />,
@@ -52,23 +52,18 @@ const roleIcon: Record<string, React.ReactNode> = {
 };
 
 const AVATAR_COLORS = [
-  'from-emerald-400 to-green-600',
-  'from-blue-400 to-blue-600',
-  'from-violet-400 to-purple-600',
-  'from-orange-400 to-red-500',
-  'from-teal-400 to-cyan-600',
-  'from-pink-400 to-rose-600',
-  'from-amber-400 to-yellow-600',
-  'from-indigo-400 to-blue-700',
-  'from-emerald-500 to-teal-600',
+  'from-neutral-700 to-neutral-900',
+  'from-zinc-700 to-zinc-900',
+  'from-stone-700 to-stone-900',
+  'from-slate-700 to-slate-900',
 ];
 
 const STATS_TOP = [
-  { label: 'Total personnel', value: 9, icon: UserCog, color: 'text-slate-600 bg-slate-100' },
-  { label: 'Agents', value: 6, icon: UserCheck, color: 'text-emerald-600 bg-emerald-50' },
-  { label: 'Superviseurs', value: 2, icon: Shield, color: 'text-violet-600 bg-violet-50' },
-  { label: 'Administrateurs', value: 1, icon: Star, color: 'text-amber-600 bg-amber-50' },
-  { label: 'Disponibles', value: 7, icon: Zap, color: 'text-blue-600 bg-blue-50' },
+  { label: 'Total personnel', value: 9, icon: UserCog },
+  { label: 'Agents', value: 6, icon: UserCheck },
+  { label: 'Superviseurs', value: 2, icon: Shield },
+  { label: 'Administrateurs', value: 1, icon: Star },
+  { label: 'Disponibles', value: 7, icon: Zap },
 ];
 
 const PAGE_SIZE = 8;
@@ -145,24 +140,24 @@ export default function AdminPersonnelPage() {
           <p className="text-slate-500 text-sm mt-0.5">Gérez les agents, superviseurs et administrateurs de la plateforme.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-200 transition-colors shadow-sm">
-            <Download size={15} /> Exporter
+          <button className="flex items-center gap-1.5 bg-white hover:bg-[#fafafa] text-[#171717] text-xs font-medium px-3 py-2 rounded-md border border-[#e5e5e5] transition-colors">
+            <Download size={13} className="text-[#737373]" /> Exporter
           </button>
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-            <UserPlus size={15} /> Ajouter un agent
+          <button className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+            <UserPlus size={13} /> Ajouter un agent
           </button>
         </div>
       </div>
 
       {/* ── Compteurs rapides ── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {STATS_TOP.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-slate-100 p-3.5 shadow-sm hover:shadow-md transition-shadow">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${color}`}>
-              <Icon size={16} />
+        {STATS_TOP.map(({ label, value, icon: Icon }) => (
+          <div key={label} className="bg-white dark:bg-[#121215] rounded-md border border-[#e5e5e5] dark:border-[#27272a] p-3.5 card-hover">
+            <div className="flex items-center justify-between text-[#737373] mb-1">
+              <span className="text-[11px] font-medium uppercase font-mono">{label}</span>
+              <Icon size={14} />
             </div>
-            <p className="text-xl font-black text-slate-900">{value}</p>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">{label}</p>
+            <p className="text-xl font-semibold font-mono text-[#171717] dark:text-white">{value}</p>
           </div>
         ))}
       </div>
@@ -213,7 +208,7 @@ export default function AdminPersonnelPage() {
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</span>
                 {values.map(v => (
                   <button key={v} onClick={() => { set(v); setPage(1); }}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border ${current === v ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>
+                    className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border ${current === v ? 'bg-[#171717] text-white border-[#171717]' : 'bg-white text-[#737373] border-[#e5e5e5] hover:text-[#171717]'}`}>
                     {v}
                   </button>
                 ))}
@@ -338,7 +333,7 @@ export default function AdminPersonnelPage() {
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
                     <button key={n} onClick={() => setPage(n)}
-                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all border ${page === n ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-200 text-slate-600 hover:bg-white'}`}>
+                      className={`w-7 h-7 rounded text-xs font-medium transition-colors border ${page === n ? 'bg-[#171717] text-white border-[#171717]' : 'border-[#e5e5e5] text-[#737373] hover:bg-[#fafafa]'}`}>
                       {n}
                     </button>
                   ))}

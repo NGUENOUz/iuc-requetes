@@ -42,8 +42,8 @@ export async function GET(request: NextRequest) {
 // POST - Vérifier si un utilisateur existe
 export async function POST(request: NextRequest) {
   try {
-    const body = await parseRequestBody(request);
-    const { identifier } = body;
+    const body: any = await parseRequestBody(request);
+    const { identifier } = body || {};
 
     if (!identifier) {
       return errorResponse('Identifiant requis', ErrorCodes.VALIDATION_ERROR, 400);

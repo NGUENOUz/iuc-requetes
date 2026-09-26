@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const { identifier } = await request.json();
   console.log('[Identify] Request received with identifier:', identifier);
     if (!identifier) {
-      return errorResponse('Identifiant requis', ErrorCodes.BAD_REQUEST, 400);
+      return errorResponse('Identifiant requis', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
     // Resolve identifier -> email & user record

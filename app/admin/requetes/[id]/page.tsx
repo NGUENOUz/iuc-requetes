@@ -17,7 +17,7 @@ import toast from 'react-hot-toast';
 const statutStyle: Record<string, string> = {
   'Soumise':    'bg-blue-100 text-blue-700 ring-1 ring-blue-200',
   'En attente': 'bg-blue-100 text-blue-700 ring-1 ring-blue-200',
-  'Assignée':   'bg-purple-100 text-purple-700 ring-1 ring-purple-200',
+  'Assignée':   'bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 ring-1 ring-neutral-300 dark:ring-neutral-700',
   'En cours':   'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200',
   'En attente d\'information': 'bg-orange-100 text-orange-700 ring-1 ring-orange-200',
   'Résolue':    'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
@@ -63,7 +63,7 @@ const getHistoryColorClass = (action: string) => {
     case 'request_created':
       return 'bg-blue-100 text-blue-600';
     case 'assigned':
-      return 'bg-violet-100 text-violet-600';
+      return 'bg-[#f0f0f0] text-[#171717]';
     case 'status_changed':
       return 'bg-yellow-100 text-yellow-600';
     case 'comment_added':
@@ -329,9 +329,9 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
           <button
             onClick={() => handleAction('valider')}
             disabled={updateStatusMutation.isPending}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20 cursor-pointer disabled:bg-emerald-400"
+            className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors cursor-pointer disabled:bg-[#a3a3a3]"
           >
-            <CheckCircle2 size={14} /> Valider & Résoudre
+            <CheckCircle2 size={13} /> Valider & Résoudre
           </button>
         )}
         {request.status?.name !== 'Rejetée' && statusRejected && (
@@ -381,9 +381,9 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
             {/* Infos */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
               {[
-                { icon: Tag, label: 'Catégorie', value: request.category?.name || 'Général', color: 'text-violet-600 bg-violet-50' },
-                { icon: Building2, label: 'Service', value: request.service?.name || 'Non assigné', color: 'text-blue-600 bg-blue-50' },
-                { icon: AlertCircle, label: 'SLA restant', value: getSlaRestant(request.due_date), color: 'text-orange-600 bg-orange-50' },
+                { icon: Tag, label: 'Catégorie', value: request.category?.name || 'Général', color: 'text-[#171717] bg-[#f5f5f5]' },
+                { icon: Building2, label: 'Service', value: request.service?.name || 'Non assigné', color: 'text-[#525252] bg-[#f5f5f5]' },
+                { icon: AlertCircle, label: 'SLA restant', value: getSlaRestant(request.due_date), color: 'text-[#171717] bg-[#f5f5f5]' },
               ].map(({ icon: Icon, label, value, color }) => (
                 <div key={label} className="bg-slate-50 rounded-xl p-3">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 ${color}`}>
@@ -463,8 +463,8 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
           {/* Commentaires */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center">
-                <MessageSquare size={16} className="text-violet-600" />
+              <div className="w-8 h-8 rounded-lg bg-[#f5f5f5] flex items-center justify-center">
+                <MessageSquare size={16} className="text-[#171717]" />
               </div>
               <h2 className="font-bold text-slate-900">Commentaires internes</h2>
               <span className="ml-auto bg-slate-100 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -511,9 +511,9 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
                 <button
                   onClick={handleSendComment}
                   disabled={!commentaire.trim() || postCommentMutation.isPending}
-                  className="absolute bottom-3 right-3 w-7 h-7 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors cursor-pointer"
+                  className="absolute bottom-3 right-3 w-7 h-7 rounded-md bg-[#171717] hover:bg-[#262626] disabled:bg-[#e5e5e5] disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors cursor-pointer"
                 >
-                  <Send size={13} />
+                  <Send size={12} />
                 </button>
               </div>
             </div>
@@ -566,29 +566,29 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
           {/* Agent assigné */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center">
-                <UserCog size={16} className="text-violet-600" />
+              <div className="w-8 h-8 rounded-lg bg-[#f5f5f5] flex items-center justify-center">
+                <UserCog size={16} className="text-[#171717]" />
               </div>
-              <h3 className="font-bold text-slate-900">Agent assigné</h3>
+              <h3 className="font-semibold text-slate-900 text-sm">Agent assigné</h3>
             </div>
             {request.assigned_agent ? (
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-md bg-[#171717] text-white text-xs font-bold font-mono flex items-center justify-center shrink-0">
                   {`${request.assigned_agent.first_name?.[0] || ''}${request.assigned_agent.last_name?.[0] || ''}`.toUpperCase().slice(0, 2)}
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-slate-900">
+                  <p className="font-semibold text-sm text-[#171717]">
                     {request.assigned_agent.first_name} {request.assigned_agent.last_name}
                   </p>
-                  <p className="text-xs text-slate-500">{request.assigned_agent.fonction || 'Agent'}</p>
+                  <p className="text-xs text-[#737373]">{request.assigned_agent.fonction || 'Agent'}</p>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-slate-400 italic mb-4">Aucun agent n&apos;est assigné à cette requête.</p>
+              <p className="text-xs text-[#737373] italic mb-4">Aucun agent n&apos;est assigné à cette requête.</p>
             )}
             <button 
               onClick={() => setIsAssignModalOpen(true)}
-              className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-xl transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 text-xs font-medium text-[#171717] bg-[#f5f5f5] hover:bg-[#ebebeb] px-3 py-2 rounded-md border border-[#e5e5e5] transition-colors cursor-pointer"
             >
               <UserCog size={13} /> Réassigner
             </button>
@@ -644,14 +644,14 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
                   placeholder="Rechercher un agent (nom, email...)..."
                   value={agentSearchQuery}
                   onChange={(e) => setAgentSearchQuery(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-300 transition-all"
+                  className="w-full bg-white border border-[#e5e5e5] rounded-md pl-9 pr-3 py-2 text-xs text-[#171717] placeholder:text-[#a3a3a3] outline-none focus:border-[#171717] transition-all"
                 />
                 {agentSearchQuery && (
                   <button
                     onClick={() => setAgentSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#171717]"
                   >
-                    <X size={14} />
+                    <X size={13} />
                   </button>
                 )}
               </div>
@@ -661,14 +661,13 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
             <div className="flex-1 overflow-y-auto p-3 space-y-1 min-h-[250px] max-h-[400px]">
               {isLoadingAgents ? (
                 <div className="flex flex-col items-center justify-center py-12 space-y-3">
-                  <RefreshCw size={24} className="text-violet-500 animate-spin" />
-                  <p className="text-xs text-slate-400 font-medium">Chargement des agents...</p>
+                  <RefreshCw size={20} className="text-[#171717] animate-spin" />
+                  <p className="text-xs text-[#737373] font-medium">Chargement des agents...</p>
                 </div>
               ) : assignableAgents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <UserCog size={32} className="text-slate-300 mb-2" />
-                  <p className="text-sm font-semibold text-slate-700">Aucun agent trouvé</p>
-                  <p className="text-xs text-slate-400 mt-1">Essayez un autre mot-clé ou modifiez la recherche</p>
+                  <UserCog size={28} className="text-[#d4d4d4] mb-2" />
+                  <p className="text-xs font-medium text-[#737373]">Aucun agent trouvé</p>
                 </div>
               ) : (
                 assignableAgents.map((agent: any) => {
@@ -679,27 +678,27 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
                       key={agent.id}
                       disabled={assignRequestMutation.isPending}
                       onClick={() => assignRequestMutation.mutate(agent.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all text-left cursor-pointer group ${
+                      className={`w-full flex items-center justify-between p-2.5 rounded-md transition-all text-left cursor-pointer border ${
                         isCurrentAgent 
-                          ? 'bg-violet-50/70 border border-violet-100' 
-                          : 'hover:bg-slate-50 border border-transparent active:scale-[0.98]'
+                          ? 'bg-[#f5f5f5] border-[#171717]' 
+                          : 'hover:bg-[#fafafa] border-[#e5e5e5]'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-md bg-[#171717] text-white text-xs font-bold font-mono flex items-center justify-center shrink-0">
                           {initials}
                         </div>
                         <div>
-                          <p className="font-bold text-xs text-slate-800 group-hover:text-violet-700 transition-colors">
+                          <p className="font-semibold text-xs text-[#171717]">
                             {agent.first_name} {agent.last_name}
                           </p>
-                          <p className="text-[10px] text-slate-400 font-mono mt-0.5">{agent.email}</p>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 capitalize">
+                          <p className="text-[10px] text-[#737373] font-mono">{agent.email}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-mono bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] capitalize">
                               {agent.role?.description || agent.role?.name || 'Agent'}
                             </span>
                             {agent.service && (
-                              <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-50 text-blue-600">
+                              <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-mono bg-white text-[#171717] border border-[#e5e5e5]">
                                 {agent.service.name}
                               </span>
                             )}
@@ -708,11 +707,11 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
                       </div>
                       
                       {isCurrentAgent ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-violet-700 bg-violet-100/70 px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#171717] bg-white border border-[#e5e5e5] px-2 py-0.5 rounded">
                           <CheckCircle2 size={10} /> Assigné
                         </span>
                       ) : (
-                        <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+                        <ChevronRight size={13} className="text-[#a3a3a3]" />
                       )}
                     </button>
                   );

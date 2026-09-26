@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   try {
     const { identifier, newPassword } = await request.json();
     if (!identifier || !newPassword) {
-      return errorResponse('Identifiant et nouveau mot de passe requis', ErrorCodes.BAD_REQUEST, 400);
+      return errorResponse('Identifiant et nouveau mot de passe requis', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
     // Resolve user record
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     // Update password via Supabase admin
-    const { error: pwdError } = await supabaseAdmin.auth.admin.updateUser(userRecord.auth_user_id, {
+    const { error: pwdError } = await supabaseAdmin.auth.admin.updateUserById(userRecord.auth_user_id, {
       password: newPassword,
     });
     if (pwdError) return errorResponse('Erreur lors de la mise à jour du mot de passe', ErrorCodes.UPDATE_FAILED, 500);
@@ -44,6 +44,6 @@ export async function POST(request: Request) {
 
     return successResponse({ message: 'Mot de passe mis à jour' }, undefined);
   } catch (err) {
-    return errorResponse('Erreur serveur', ErrorCodes.INTERNAL, 500);
+    return errorResponse('Erreur serveur', ErrorCodes.INTERNAL_ERROR, 500);
   }
 }

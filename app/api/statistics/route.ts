@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     // Grouper par statut
     const requestsByStatus: Record<string, any> = {};
-    statusData?.forEach(req => {
+    statusData?.forEach((req: any) => {
       const statusName = req.request_statuses?.name || 'Inconnu';
       if (!requestsByStatus[statusName]) {
         requestsByStatus[statusName] = {
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       .select('priority_id, priorities(name, color, level)');
 
     const requestsByPriority: Record<string, any> = {};
-    priorityData?.forEach(req => {
+    priorityData?.forEach((req: any) => {
       const priorityName = req.priorities?.name || 'Inconnu';
       if (!requestsByPriority[priorityName]) {
         requestsByPriority[priorityName] = {
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       .not('resolution_time_hours', 'is', null);
 
     const avgResolutionTime = resolvedRequestsWithTime && resolvedRequestsWithTime.length > 0
-      ? resolvedRequestsWithTime.reduce((acc, r) => acc + (r.resolution_time_hours || 0), 0) / resolvedRequestsWithTime.length
+      ? resolvedRequestsWithTime.reduce((acc: number, r: any) => acc + (r.resolution_time_hours || 0), 0) / resolvedRequestsWithTime.length
       : 0;
 
     // Note de satisfaction moyenne
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       .select('rating');
 
     const avgSatisfaction = ratings && ratings.length > 0
-      ? ratings.reduce((acc, r) => acc + r.rating, 0) / ratings.length
+      ? ratings.reduce((acc: number, r: any) => acc + r.rating, 0) / ratings.length
       : 0;
 
     // Top agents (par nombre de requêtes résolues)
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       .not('assigned_to', 'is', null);
 
     const agentStats: Record<string, any> = {};
-    topAgents?.forEach(req => {
+    topAgents?.forEach((req: any) => {
       const agentId = req.assigned_to;
       if (!agentId) return;
       
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
       `);
 
     const requestsByService: Record<string, any> = {};
-    serviceStats?.forEach(req => {
+    serviceStats?.forEach((req: any) => {
       const serviceName = req.services?.name || 'Non assigné';
       if (!requestsByService[serviceName]) {
         requestsByService[serviceName] = { count: 0 };

@@ -25,28 +25,28 @@ export default function SuggestionsIaPage() {
 
   const getTypeConfig = (type: string) => {
     switch (type) {
-      case 'alert': return { icon: AlertTriangle, color: 'text-red-600 bg-red-50 border-red-100' };
-      case 'optimization': return { icon: Zap, color: 'text-violet-600 bg-violet-50 border-violet-100' };
-      case 'recommendation': return { icon: TrendingUp, color: 'text-indigo-600 bg-indigo-50 border-indigo-100' };
-      default: return { icon: Lightbulb, color: 'text-slate-600 bg-slate-50 border-slate-100' };
+      case 'alert': return { icon: AlertTriangle, color: 'text-[#171717] dark:text-white bg-[#f5f5f5] dark:bg-[#18181b] border-[#e5e5e5] dark:border-[#27272a]' };
+      case 'optimization': return { icon: Zap, color: 'text-[#171717] dark:text-white bg-[#f5f5f5] dark:bg-[#18181b] border-[#e5e5e5] dark:border-[#27272a]' };
+      case 'recommendation': return { icon: TrendingUp, color: 'text-[#171717] dark:text-white bg-[#f5f5f5] dark:bg-[#18181b] border-[#e5e5e5] dark:border-[#27272a]' };
+      default: return { icon: Lightbulb, color: 'text-[#737373] bg-[#f5f5f5] dark:bg-[#18181b] border-[#e5e5e5] dark:border-[#27272a]' };
     }
   };
 
   const getPriorityConfig = (priority: string) => {
     switch (priority) {
-      case 'high': return { label: 'Haute', color: 'bg-red-100 text-red-700 border-red-200' };
-      case 'medium': return { label: 'Moyenne', color: 'bg-amber-100 text-amber-700 border-amber-200' };
-      case 'low': return { label: 'Basse', color: 'bg-slate-100 text-slate-600 border-slate-200' };
-      default: return { label: 'Inconnue', color: 'bg-slate-100 text-slate-600 border-slate-200' };
+      case 'high': return { label: 'Haute', color: 'bg-[#171717] text-white dark:bg-white dark:text-black border-[#171717]' };
+      case 'medium': return { label: 'Moyenne', color: 'bg-[#f5f5f5] text-[#171717] dark:bg-[#18181b] dark:text-white border-[#e5e5e5] dark:border-[#27272a]' };
+      case 'low': return { label: 'Basse', color: 'bg-white text-[#737373] border-[#e5e5e5] dark:bg-[#121215] dark:border-[#27272a]' };
+      default: return { label: 'Normale', color: 'bg-[#f5f5f5] text-[#737373] border-[#e5e5e5]' };
     }
   };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'pending': return { icon: Clock, label: 'En attente', color: 'text-amber-600' };
-      case 'applied': return { icon: CheckCircle2, label: 'Appliquée', color: 'text-emerald-600' };
-      case 'dismissed': return { icon: XCircle, label: 'Rejetée', color: 'text-slate-400' };
-      default: return { icon: Clock, label: 'Inconnu', color: 'text-slate-400' };
+      case 'pending': return { icon: Clock, label: 'En attente', color: 'text-[#737373]' };
+      case 'applied': return { icon: CheckCircle2, label: 'Appliquée', color: 'text-[#171717] dark:text-white' };
+      case 'dismissed': return { icon: XCircle, label: 'Rejetée', color: 'text-[#a3a3a3]' };
+      default: return { icon: Clock, label: 'Inconnu', color: 'text-[#737373]' };
     }
   };
 
@@ -71,41 +71,14 @@ export default function SuggestionsIaPage() {
     }
   };
 
-  // Loading skeleton screen
   if (loadingSuggestions) {
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-6 animate-pulse">
-        {/* Header Skeleton */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-200"></div>
-            <div className="space-y-2">
-              <div className="h-6 w-48 bg-slate-200 rounded-lg"></div>
-              <div className="h-4 w-72 bg-slate-100 rounded-lg"></div>
-            </div>
-          </div>
-          <div className="h-10 w-32 bg-slate-200 rounded-xl"></div>
-        </div>
-
-        {/* Filters Skeleton */}
-        <div className="h-14 w-full bg-slate-100 rounded-2xl border border-slate-200"></div>
-
-        {/* Suggestions List Skeleton */}
-        <div className="space-y-4">
+      <div className="p-6 max-w-5xl mx-auto space-y-6 animate-pulse">
+        <div className="h-10 w-48 bg-[#f0f0f0] dark:bg-[#18181b] rounded-md"></div>
+        <div className="h-12 w-full bg-[#f0f0f0] dark:bg-[#18181b] rounded-md"></div>
+        <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 animate-pulse">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-slate-200 shrink-0"></div>
-                <div className="flex-1 space-y-3">
-                  <div className="h-5 w-48 bg-slate-200 rounded-lg"></div>
-                  <div className="h-4 w-full bg-slate-100 rounded-lg"></div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="h-12 bg-slate-50 rounded-xl border border-slate-100"></div>
-                    <div className="h-12 bg-slate-50 rounded-xl border border-slate-100"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div key={i} className="h-28 bg-[#f5f5f5] dark:bg-[#121215] rounded-md border border-[#e5e5e5] dark:border-[#27272a]"></div>
           ))}
         </div>
       </div>
@@ -113,58 +86,57 @@ export default function SuggestionsIaPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
 
       {/* En-tête */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e5e5] dark:border-[#27272a] pb-5">
         <div className="flex items-center gap-3">
-          <Link href="/admin" className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors">
-            <ArrowLeft size={16} />
+          <Link href="/admin" className="p-2 bg-white dark:bg-[#18181b] hover:bg-[#f5f5f5] text-[#171717] dark:text-white rounded-md border border-[#e5e5e5] dark:border-[#27272a] transition-colors">
+            <ArrowLeft size={14} />
           </Link>
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 text-white flex items-center justify-center shadow-lg">
-            <Lightbulb size={24} />
+          <div className="w-9 h-9 rounded-md bg-[#171717] dark:bg-white text-white dark:text-black flex items-center justify-center">
+            <Lightbulb size={18} />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">Suggestions IA</h1>
-            <p className="text-slate-500 text-sm">Recommandations intelligentes pour optimiser vos opérations</p>
+            <h1 className="text-xl font-semibold text-[#171717] dark:text-white tracking-tight">Suggestions IA</h1>
+            <p className="text-[#737373] text-xs mt-0.5">Optimisations et recommandations générées pour le traitement des requêtes</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold bg-violet-50 border border-violet-100 text-violet-700 px-3 py-2 rounded-xl flex items-center gap-1.5">
-            <Brain size={14} /> {suggestions.filter(s => s.status === 'pending').length} suggestions actives
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono bg-[#f5f5f5] dark:bg-[#18181b] border border-[#e5e5e5] dark:border-[#27272a] text-[#171717] dark:text-white px-2.5 py-1.5 rounded-md flex items-center gap-1.5">
+            <Brain size={13} /> {suggestions.filter(s => s.status === 'pending').length} en attente
           </span>
           <button
             onClick={() => generateMutation.mutate()}
             disabled={generateMutation.isPending}
-            className="bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all flex items-center gap-1.5 shadow-md shadow-violet-600/10 cursor-pointer"
+            className="bg-[#171717] hover:bg-[#262626] dark:bg-white dark:hover:bg-[#e4e4e7] disabled:opacity-50 text-white dark:text-black font-medium text-xs px-3.5 py-2 rounded-md transition-colors flex items-center gap-1.5 cursor-pointer"
           >
-            <Brain size={14} className={generateMutation.isPending ? 'animate-spin' : ''} />
-            {generateMutation.isPending ? 'Génération...' : 'Générer via IA'}
+            <Brain size={13} className={generateMutation.isPending ? 'animate-spin' : ''} />
+            {generateMutation.isPending ? 'Analyse...' : 'Analyser le flux'}
           </button>
         </div>
       </div>
 
       {/* Filtres et recherche */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-wrap gap-3 items-center">
+      <div className="bg-white dark:bg-[#121215] rounded-md border border-[#e5e5e5] dark:border-[#27272a] p-3 flex flex-wrap gap-3 items-center">
         <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-          <Search size={16} className="text-slate-400" />
+          <Search size={14} className="text-[#a3a3a3]" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Rechercher une suggestion..."
-            className="flex-1 outline-none text-sm text-slate-700 placeholder:text-slate-400"
+            placeholder="Rechercher une recommandation..."
+            className="flex-1 outline-none text-xs text-[#171717] dark:text-white placeholder:text-[#a3a3a3] bg-transparent"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-slate-400" />
+        <div className="flex items-center gap-1">
           {(['all', 'pending', 'applied', 'dismissed'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`text-xs px-2.5 py-1 rounded-md transition-colors cursor-pointer border ${
                 filter === f
-                  ? 'bg-violet-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-[#171717] text-white dark:bg-white dark:text-black border-[#171717] dark:border-white font-medium'
+                  : 'bg-transparent text-[#737373] border-transparent hover:text-[#171717] dark:hover:text-white'
               }`}
             >
               {f === 'all' ? 'Toutes' : f === 'pending' ? 'En attente' : f === 'applied' ? 'Appliquées' : 'Rejetées'}
@@ -176,9 +148,9 @@ export default function SuggestionsIaPage() {
       {/* Liste des suggestions */}
       <div className="space-y-3">
         {filteredSuggestions.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <Lightbulb size={48} className="mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500 font-semibold">Aucune suggestion trouvée</p>
+          <div className="bg-white dark:bg-[#121215] rounded-md border border-[#e5e5e5] dark:border-[#27272a] p-12 text-center">
+            <Lightbulb size={32} className="mx-auto text-[#d4d4d4] mb-2" />
+            <p className="text-[#737373] text-xs">Aucune suggestion active pour le moment</p>
           </div>
         ) : (
           filteredSuggestions.map(suggestion => {
@@ -191,66 +163,66 @@ export default function SuggestionsIaPage() {
             return (
               <div
                 key={suggestion.id}
-                className={`bg-white rounded-2xl border border-slate-200 p-5 transition-all hover:shadow-md ${
+                className={`bg-white dark:bg-[#121215] rounded-md border border-[#e5e5e5] dark:border-[#27272a] p-4 transition-all card-hover ${
                   suggestion.status === 'dismissed' ? 'opacity-60' : ''
                 }`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3.5">
                   {/* Icône du type */}
-                  <div className={`w-12 h-12 rounded-xl ${typeConfig.color} flex items-center justify-center shrink-0`}>
-                    <TypeIcon size={20} />
+                  <div className={`w-9 h-9 rounded-md border ${typeConfig.color} flex items-center justify-center shrink-0`}>
+                    <TypeIcon size={16} />
                   </div>
 
                   {/* Contenu */}
-                  <div className="flex-1 space-y-3">
+                  <div className="flex-1 space-y-2.5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-slate-900 text-base">{suggestion.title}</h3>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${priorityConfig.color}`}>
+                          <h3 className="font-semibold text-[#171717] dark:text-white text-sm">{suggestion.title}</h3>
+                          <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded border ${priorityConfig.color}`}>
                             {priorityConfig.label}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-600 leading-relaxed">{suggestion.description}</p>
+                        <p className="text-xs text-[#737373] dark:text-[#a1a1aa] leading-relaxed">{suggestion.description}</p>
                       </div>
-                      <div className={`flex items-center gap-1.5 text-xs font-bold ${statusConfig.color}`}>
-                        <StatusIcon size={14} />
+                      <div className={`flex items-center gap-1 text-[11px] font-mono ${statusConfig.color}`}>
+                        <StatusIcon size={12} />
                         {statusConfig.label}
                       </div>
                     </div>
 
                     {/* Impact et action */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
                       {suggestion.impact && (
-                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                          <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Impact</p>
-                          <p className="text-xs font-semibold text-slate-700">{suggestion.impact}</p>
+                        <div className="bg-[#fafafa] dark:bg-[#18181b] rounded-md p-2.5 border border-[#e5e5e5] dark:border-[#27272a]">
+                          <p className="text-[10px] font-mono uppercase tracking-wider text-[#737373] mb-0.5">Impact calculé</p>
+                          <p className="text-xs text-[#171717] dark:text-white font-medium">{suggestion.impact}</p>
                         </div>
                       )}
                       {suggestion.recommended_action && (
-                        <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-100">
-                          <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1">Action recommandée</p>
-                          <p className="text-xs font-semibold text-indigo-900">{suggestion.recommended_action}</p>
+                        <div className="bg-[#fafafa] dark:bg-[#18181b] rounded-md p-2.5 border border-[#e5e5e5] dark:border-[#27272a]">
+                          <p className="text-[10px] font-mono uppercase tracking-wider text-[#737373] mb-0.5">Action recommandée</p>
+                          <p className="text-xs text-[#171717] dark:text-white font-medium">{suggestion.recommended_action}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Actions et timestamp */}
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs text-slate-400">{formatTimeAgo(suggestion.created_at)}</span>
+                    <div className="flex items-center justify-between pt-2 border-t border-[#f0f0f0] dark:border-[#27272a]">
+                      <span className="text-[11px] font-mono text-[#737373]">{formatTimeAgo(suggestion.created_at)}</span>
                       {suggestion.status === 'pending' && (
                         <div className="flex items-center gap-2">
                           <button 
                             onClick={() => updateStatusMutation.mutate({ id: suggestion.id, status: 'dismissed' })}
-                            className="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg transition-all cursor-pointer"
+                            className="text-xs font-medium bg-white dark:bg-[#18181b] hover:bg-[#f5f5f5] text-[#737373] border border-[#e5e5e5] dark:border-[#27272a] px-3 py-1 rounded-md transition-colors cursor-pointer"
                           >
                             Rejeter
                           </button>
                           <button 
                             onClick={() => updateStatusMutation.mutate({ id: suggestion.id, status: 'applied' })}
-                            className="text-xs font-bold bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                            className="text-xs font-medium bg-[#171717] hover:bg-[#262626] dark:bg-white dark:hover:bg-[#e4e4e7] text-white dark:text-black px-3.5 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer"
                           >
-                            Appliquer <ArrowRight size={12} />
+                            Appliquer <ArrowRight size={11} />
                           </button>
                         </div>
                       )}

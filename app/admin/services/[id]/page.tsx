@@ -28,7 +28,7 @@ const DEPARTEMENT = {
 };
 
 const STATS = [
-  { label: 'Agents affectés', value: 4, icon: Users, color: 'text-indigo-600 bg-indigo-50' },
+  { label: 'Agents affectés', value: 4, icon: Users, color: 'text-neutral-900 bg-neutral-100 dark:text-neutral-100 dark:bg-neutral-800' },
   { label: 'Requêtes en cours', value: 18, icon: Clock, color: 'text-amber-600 bg-amber-50' },
   { label: 'SLA respecté', value: '94%', icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50' },
   { label: 'Tps de réponse moyen', value: '1.5j', icon: Zap, color: 'text-blue-600 bg-blue-50' },
@@ -59,7 +59,7 @@ const CATEGORIES = [
 
 const REPARTITION_PERF = [
   { name: 'Attestations', value: 45, color: 'bg-emerald-500' },
-  { name: 'Réclamations de note', value: 35, color: 'bg-indigo-500' },
+  { name: 'Réclamations de note', value: 35, color: 'bg-neutral-900 dark:bg-neutral-200' },
   { name: 'Correction de relevés', value: 12, color: 'bg-amber-500' },
   { name: 'Changements de groupe', value: 8, color: 'bg-red-400' },
 ];
@@ -79,16 +79,16 @@ const prioriteStyle: Record<string, string> = {
 };
 
 const roleStyle: Record<string, string> = {
-  'Agent':          'bg-slate-100 text-slate-700',
-  'Superviseur':    'bg-violet-100 text-violet-700',
-  'Administrateur': 'bg-amber-100 text-amber-700',
+  'Agent':          'bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]',
+  'Superviseur':    'bg-[#171717] text-white',
+  'Administrateur': 'bg-[#262626] text-white',
 };
 
 const AVATAR_COLORS = [
-  'from-indigo-400 to-indigo-600',
-  'from-emerald-400 to-emerald-600',
-  'from-violet-400 to-violet-600',
-  'from-amber-400 to-amber-600',
+  'from-neutral-700 to-neutral-900',
+  'from-zinc-700 to-zinc-900',
+  'from-stone-700 to-stone-900',
+  'from-slate-700 to-slate-900',
 ];
 
 /* ═══════════════════════ COMPOSANT ═══════════════════════ */
@@ -126,8 +126,8 @@ export default function AdminServiceDetailPage({ params }: { params: Promise<{ i
 
       {/* ── Actions ── */}
       <div className="flex flex-wrap gap-2">
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-          <Edit3 size={14} /> Modifier le service
+        <button className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+          <Edit3 size={13} /> Modifier le service
         </button>
         
         {/* Statut service */}
@@ -402,7 +402,7 @@ export default function AdminServiceDetailPage({ params }: { params: Promise<{ i
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <button className="text-xs text-indigo-600 hover:text-indigo-800 font-bold hover:underline">
+                          <button className="text-xs text-neutral-900 dark:text-neutral-100 hover:underline font-bold">
                             Configurer
                           </button>
                         </td>
@@ -480,25 +480,25 @@ export default function AdminServiceDetailPage({ params }: { params: Promise<{ i
             )}
           </div>
 
-          {/* Widget IA */}
-          <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-500/20">
+          {/* Widget IA (Style Vercel Dark Card) */}
+          <div className="bg-[#171717] dark:bg-[#121215] border border-[#262626] dark:border-[#27272a] rounded-xl p-5 text-white shadow-xs">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap size={16} className="text-indigo-200" />
-                  <h3 className="font-bold text-sm">Rapport de charge IA</h3>
+                  <Zap size={15} className="text-white" />
+                  <h3 className="font-semibold text-xs text-white uppercase tracking-wider">Rapport de Charge IA</h3>
                 </div>
-                <p className="text-xs text-indigo-100 leading-relaxed mb-3">
-                  Le département Scolarité enregistre une augmentation de <strong>14% des demandes d&apos;attestations</strong> ce mois-ci. 
-                  Grâce à l&apos;attribution intelligente, la charge de travail est uniformément répartie. L&apos;embauche ou l&apos;affectation temporaire d&apos;un agent supplémentaire n&apos;est pas requise actuellement.
+                <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
+                  Le département enregistre un flux régulier avec une répartition équilibrée de la charge entre les agents. 
+                  L&apos;automatisation des réponses sur les réclamations standards est opérationnelle.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Santé du service: Excellente ✓</div>
-                  <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Attribution: Équilibrée ⚖</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Santé du service: Optimale ✓</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Attribution: Équilibrée ⚖</div>
                 </div>
               </div>
-              <div className="bg-white/20 rounded-2xl p-3 shrink-0">
-                <TrendingUp size={28} className="text-white" />
+              <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">
+                <TrendingUp size={20} className="text-white" />
               </div>
             </div>
           </div>

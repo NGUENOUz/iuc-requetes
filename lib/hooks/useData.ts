@@ -13,18 +13,20 @@ export function useUser() {
   return useQuery({
     queryKey: ['user'],
     queryFn: async (): Promise<User> => {
-      const response = await fetch('/api/auth/check-user');
-      if (!response.ok) throw new Error('Non authentifié');
-      const data = await response.json();
-      return data.data;
+      try {
+        const response = await fetch('/api/auth/check-user');
+        if (!response.ok) throw new Error('Non authentifié');
+        const data = await response.json();
+        setUser(data.data);
+        return data.data;
+      } catch (err) {
+        setUser(null);
+        setLoading(false);
+        throw err;
+      }
     },
     staleTime: 5 * 60 * 1000,
     retry: false,
-    onSuccess: (data) => setUser(data),
-    onError: () => {
-      setUser(null);
-      setLoading(false);
-    },
   });
 }
 

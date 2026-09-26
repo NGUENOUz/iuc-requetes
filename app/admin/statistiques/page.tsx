@@ -14,24 +14,24 @@ import {
 const PERIODS = ['7 derniers jours', 'Ce mois', 'Dernier trimestre', 'Cette année'];
 
 const OVERVIEW_CARDS = [
-  { label: 'Volume total', value: '478', change: '+12.4%', isPositive: true, subtext: 'vs période précédente', icon: BarChart2, color: 'text-indigo-600 bg-indigo-50' },
-  { label: 'SLA respecté', value: '93.5%', change: '+1.2%', isPositive: true, subtext: 'Objectif : >90%', icon: Zap, color: 'text-emerald-600 bg-emerald-50' },
-  { label: 'Temps moyen', value: '1.8j', change: '-8.5%', isPositive: true, subtext: 'vs 2.1j le mois dernier', icon: Clock, color: 'text-blue-600 bg-blue-50' },
-  { label: 'Satisfaction', value: '4.7/5', change: '+2.1%', isPositive: true, subtext: 'Basé sur 342 retours', icon: Star, color: 'text-amber-500 bg-amber-50' },
+  { label: 'Volume total', value: '478', change: '+12.4%', isPositive: true, subtext: 'Flux enregistré', icon: BarChart2 },
+  { label: 'SLA respecté', value: '93.5%', change: '+1.2%', isPositive: true, subtext: 'Objectif : >90%', icon: Zap },
+  { label: 'Délai moyen', value: '1.8j', change: '-8.5%', isPositive: true, subtext: 'Prise en charge', icon: Clock },
+  { label: 'Satisfaction usagers', value: '4.7/5', change: '+2.1%', isPositive: true, subtext: '342 avis vérifiés', icon: Star },
 ];
 
 const REQUETES_BY_STATUS = [
-  { label: 'Résolues', count: 310, pct: 65, color: 'bg-emerald-500 text-emerald-700 bg-emerald-50' },
-  { label: 'En cours', count: 112, pct: 23, color: 'bg-yellow-500 text-yellow-700 bg-yellow-50' },
-  { label: 'En attente', count: 42, pct: 9, color: 'bg-blue-500 text-blue-700 bg-blue-50' },
-  { label: 'Rejetées', count: 14, pct: 3, color: 'bg-red-500 text-red-700 bg-red-50' },
+  { label: 'Résolues', count: 310, pct: 65, color: 'bg-[#171717]' },
+  { label: 'En cours', count: 112, pct: 23, color: 'bg-[#525252]' },
+  { label: 'En attente', count: 42, pct: 9, color: 'bg-[#a3a3a3]' },
+  { label: 'Rejetées', count: 14, pct: 3, color: 'bg-[#d4d4d4]' },
 ];
 
 const REQUETES_BY_DEPARTMENT = [
-  { name: 'Scolarité', total: 250, active: 30, pct: 52, color: 'bg-indigo-500' },
-  { name: 'Pédagogie', total: 120, active: 22, pct: 25, color: 'bg-emerald-500' },
-  { name: 'Finance & Comptabilité', total: 95, active: 10, pct: 20, color: 'bg-amber-500' },
-  { name: 'Direction Générale', total: 13, active: 2, pct: 3, color: 'bg-red-400' },
+  { name: 'Scolarité', total: 250, active: 30, pct: 52, color: 'bg-[#171717]' },
+  { name: 'Pédagogie', total: 120, active: 22, pct: 25, color: 'bg-[#525252]' },
+  { name: 'Finance & Comptabilité', total: 95, active: 10, pct: 20, color: 'bg-[#737373]' },
+  { name: 'Direction Générale', total: 13, active: 2, pct: 3, color: 'bg-[#a3a3a3]' },
 ];
 
 const REQUETES_BY_CATEGORY = [
@@ -81,41 +81,39 @@ export default function AdminStatistiquesPage() {
             <select
               value={period}
               onChange={e => setPeriod(e.target.value)}
-              className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 shadow-sm cursor-pointer"
+              className="bg-white border border-[#e5e5e5] text-[#171717] text-xs font-medium px-3 py-2 rounded-md outline-none focus:border-[#171717] cursor-pointer"
             >
               {PERIODS.map(p => (
                 <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-            <Download size={15} /> Exporter le rapport
+          <button className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+            <Download size={13} /> Exporter
           </button>
         </div>
       </div>
 
-      {/* ── Cartes d&apos;indicateurs de performance clés (KPIs) ── */}
+      {/* ── Cartes d'indicateurs de performance clés (KPIs) ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {OVERVIEW_CARDS.map(({ label, value, change, isPositive, subtext, icon: Icon, color }) => (
-          <div key={label} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+        {OVERVIEW_CARDS.map(({ label, value, change, isPositive, subtext, icon: Icon }) => (
+          <div key={label} className="bg-white rounded-md border border-[#e5e5e5] p-4 hover:border-[#171717]/40 transition-colors">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{label}</p>
-                <h3 className="text-2xl font-black text-slate-900 mt-2">{value}</h3>
+                <p className="text-xs text-[#737373] font-medium">{label}</p>
+                <h3 className="text-2xl font-semibold text-[#171717] tracking-tight mt-1">{value}</h3>
               </div>
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
-                <Icon size={18} />
+              <div className="w-7 h-7 rounded border border-[#e5e5e5] bg-[#fafafa] flex items-center justify-center shrink-0 text-[#171717]">
+                <Icon size={14} />
               </div>
             </div>
             
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-50">
-              <span className={`inline-flex items-center gap-0.5 text-xs font-black px-1.5 py-0.5 rounded-md ${
-                isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
-              }`}>
-                {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+            <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-[#f0f0f0]">
+              <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.2 rounded bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]">
+                {isPositive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
                 {change}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">{subtext}</span>
+              <span className="text-[11px] text-[#737373]">{subtext}</span>
             </div>
           </div>
         ))}
@@ -150,22 +148,22 @@ export default function AdminStatistiquesPage() {
             </div>
           </div>
 
-          {/* Rendu graphique vectoriel premium */}
-          <div className="relative w-full h-[220px] bg-slate-50/50 rounded-2xl border border-slate-100/50 overflow-hidden flex items-end px-6 pb-8 pt-4">
+          {/* Rendu graphique vectoriel premium monochrome Vercel */}
+          <div className="relative w-full h-[220px] bg-[#fafafa] dark:bg-[#121215] rounded-xl border border-[#e5e5e5] dark:border-[#27272a] overflow-hidden flex items-end px-6 pb-8 pt-4">
             
             {/* Grille horizontale de fond */}
             <div className="absolute inset-0 flex flex-col justify-between p-4 py-8 pointer-events-none opacity-40">
-              <div className="border-b border-slate-200 w-full" />
-              <div className="border-b border-slate-200 w-full" />
-              <div className="border-b border-slate-200 w-full" />
+              <div className="border-b border-[#e5e5e5] dark:border-[#27272a] w-full" />
+              <div className="border-b border-[#e5e5e5] dark:border-[#27272a] w-full" />
+              <div className="border-b border-[#e5e5e5] dark:border-[#27272a] w-full" />
             </div>
 
             {/* Tracé SVG interactif */}
             <svg className="absolute inset-0 w-full h-full p-4 py-8" viewBox="0 0 440 160" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#171717" stopOpacity="0.12" />
+                  <stop offset="100%" stopColor="#171717" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               {/* Aire sous la courbe */}
@@ -177,8 +175,8 @@ export default function AdminStatistiquesPage() {
               <path
                 d="M 20 150 L 100 110 L 180 135 L 260 70 L 340 30 L 420 55"
                 fill="none"
-                stroke="#10b981"
-                strokeWidth="3.5"
+                stroke="#171717"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -188,25 +186,25 @@ export default function AdminStatistiquesPage() {
                   key={pt.label}
                   cx={pt.x}
                   cy={pt.y}
-                  r="4.5"
+                  r="4"
                   fill="#ffffff"
-                  stroke="#10b981"
-                  strokeWidth="2.5"
+                  stroke="#171717"
+                  strokeWidth="2"
                 />
               ))}
             </svg>
 
             {/* Labels de l'axe X */}
-            <div className="absolute bottom-2 inset-x-0 flex justify-between px-6 text-[10px] text-slate-400 font-bold font-mono">
+            <div className="absolute bottom-2 inset-x-0 flex justify-between px-6 text-[10px] text-[#737373] font-medium font-mono">
               {CHART_DATA_TREND.map(pt => (
                 <span key={pt.label}>{pt.label}</span>
               ))}
             </div>
             
             {/* Infobulle de survol fictive */}
-            <div className="absolute top-8 right-8 bg-slate-900 text-white rounded-xl p-2 px-3 shadow-lg border border-white/10 flex flex-col pointer-events-none select-none z-10">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Pic d&apos;Avril</span>
-              <span className="text-xs font-black">210 requêtes</span>
+            <div className="absolute top-8 right-8 bg-[#171717] text-white rounded-md p-2 px-3 shadow-md border border-[#262626] flex flex-col pointer-events-none select-none z-10">
+              <span className="text-[9px] text-[#a3a3a3] font-medium uppercase tracking-wider">Pic de volume</span>
+              <span className="text-xs font-semibold font-mono">210 requêtes</span>
             </div>
           </div>
         </div>
@@ -376,25 +374,26 @@ export default function AdminStatistiquesPage() {
         </div>
       </div>
 
-      {/* Widget IA de suggestion stratégique */}
-      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-500/20">
+      {/* Widget IA de suggestion stratégique (Style Vercel Dark Card) */}
+      <div className="bg-[#171717] dark:bg-[#121215] border border-[#262626] dark:border-[#27272a] rounded-xl p-5 text-white shadow-xs">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={16} className="text-indigo-200" />
-              <h3 className="font-bold text-sm">Analyses stratégiques IA</h3>
+              <Sparkles size={15} className="text-white" />
+              <h3 className="font-semibold text-xs text-white uppercase tracking-wider">Recommandation Stratégique IA</h3>
             </div>
-            <p className="text-xs text-indigo-100 leading-relaxed mb-3">
-              Le service **Scolarité** respecte son SLA à 94%, mais le temps de réponse moyen s&apos;allonge légèrement le mercredi en raison d&apos;un pic récurrent d&apos;affluence. 
-              **Recommandation** : Automatiser l&apos;approbation des demandes de *Certificat de Scolarité* via le routage instantané pour désengorger les agents durant ces créneaux.
+            <p className="text-xs text-[#a3a3a3] leading-relaxed mb-3">
+              Le service <strong className="text-white font-medium">Scolarité</strong> maintient un SLA de 94%, avec une légère hausse des délais constatée en milieu de semaine suite aux délibérations académiques. 
+              <br />
+              <span className="text-[#d4d4d4] font-medium">Action suggérée :</span> L&apos;activation de la certification numérique instantanée pour les attestations d&apos;inscription absorbera 40% des flux récurrents.
             </p>
             <div className="flex gap-2 flex-wrap">
-              <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Optimisation de process active</div>
-              <div className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-bold">Conseil : Automatisation du certificat</div>
+              <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Routage automatisé actif</div>
+              <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Gain estimé : -1.2j de délai</div>
             </div>
           </div>
-          <div className="bg-white/20 rounded-2xl p-3 shrink-0">
-            <TrendingUp size={28} className="text-white" />
+          <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">
+            <TrendingUp size={20} className="text-white" />
           </div>
         </div>
       </div>
@@ -404,8 +403,8 @@ export default function AdminStatistiquesPage() {
 }
 
 const AVATAR_COLORS = [
-  'from-indigo-400 to-indigo-600',
-  'from-emerald-400 to-emerald-600',
-  'from-violet-400 to-violet-600',
-  'from-amber-400 to-amber-600',
+  'from-neutral-700 to-neutral-900',
+  'from-zinc-600 to-zinc-800',
+  'from-slate-700 to-slate-900',
+  'from-neutral-800 to-black',
 ];

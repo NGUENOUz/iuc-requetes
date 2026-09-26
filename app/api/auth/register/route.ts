@@ -9,10 +9,10 @@ import { successResponse, errorResponse, handleError, parseRequestBody, ErrorCod
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await parseRequestBody(request);
+    const body: any = await parseRequestBody(request);
     
     // Déterminer le type d'inscription (étudiant ou personnel)
-    const isStudent = body.niveau && body.filiere;
+    const isStudent = body?.niveau && body?.filiere;
     const schema = isStudent ? registerStudentSchema : registerStaffSchema;
     
     // Valider les données
@@ -54,12 +54,12 @@ export async function POST(request: NextRequest) {
         'Erreur lors de la création du compte',
         ErrorCodes.CREATE_FAILED,
         500,
-        authError?.message
+        (authError as any)?.message
       );
     }
 
     // Récupérer le rôle étudiant par défaut si c'est un étudiant
-    let roleId = validatedData.role_id;
+    let roleId = (validatedData as any).role_id;
     
     if (isStudent) {
       const { data: studentRole } = await supabaseAdmin
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       .insert({
         auth_user_id: authData.user.id,
         role_id: roleId,
-        service_id: validatedData.service_id || null,
+        service_id: (validatedData as any).service_id || null,
         matricule: validatedData.matricule,
         first_name: validatedData.first_name,
         last_name: validatedData.last_name,
@@ -86,16 +86,16 @@ export async function POST(request: NextRequest) {
         
         // Données spécifiques étudiant
         ...(isStudent && {
-          niveau: validatedData.niveau,
-          filiere: validatedData.filiere,
-          annee_academique: validatedData.annee_academique || new Date().getFullYear().toString(),
+          niveau: (validatedData as any).niveau,
+          filiere: (validatedData as any).filiere,
+          annee_academique: (validatedData as any).annee_academique || new Date().getFullYear().toString(),
         }),
         
         // Données spécifiques personnel
         ...(!isStudent && {
-          fonction: validatedData.fonction,
-          specialite: validatedData.specialite || null,
-          date_embauche: validatedData.date_embauche || new Date().toISOString().split('T')[0],
+          fonction: (validatedData as any).fonction,
+          specialite: (validatedData as any).specialite || null,
+          date_embauche: (validatedData as any).date_embauche || new Date().toISOString().split('T')[0],
         }),
       })
       .select(`

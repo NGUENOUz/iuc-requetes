@@ -34,9 +34,9 @@ const NIVEAUX    = ['Tous', 'L1', 'L2', 'L3', 'M1', 'M2'];
 const DEPARTEMENTS = ['Tous', 'Informatique', 'Gestion', 'Ingénierie', 'Droit', 'Santé'];
 
 const statutStyle: Record<string, string> = {
-  'Actif':    'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
-  'Suspendu': 'bg-red-100 text-red-700 ring-1 ring-red-200',
-  'Diplômé':  'bg-blue-100 text-blue-700 ring-1 ring-blue-200',
+  'Actif':    'bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5]',
+  'Suspendu': 'bg-[#171717] text-white border border-[#171717]',
+  'Diplômé':  'bg-[#fafafa] text-[#737373] border border-[#e5e5e5]',
 };
 const statutIcon: Record<string, React.ReactNode> = {
   'Actif':    <UserCheck size={11} />,
@@ -45,22 +45,20 @@ const statutIcon: Record<string, React.ReactNode> = {
 };
 
 const AVATAR_COLORS = [
-  'from-emerald-400 to-green-600',
-  'from-blue-400 to-blue-600',
-  'from-violet-400 to-purple-600',
-  'from-orange-400 to-red-500',
-  'from-pink-400 to-rose-600',
-  'from-yellow-400 to-amber-600',
+  'from-neutral-700 to-neutral-900',
+  'from-zinc-700 to-zinc-900',
+  'from-stone-700 to-stone-900',
+  'from-slate-700 to-slate-900',
 ];
 
 const PAGE_SIZE = 8;
 
 const STATS_TOP = [
-  { label: 'Total étudiants', value: 5842, icon: Users, color: 'text-slate-600 bg-slate-100' },
-  { label: 'Actifs', value: 5610, icon: UserCheck, color: 'text-emerald-600 bg-emerald-50' },
-  { label: 'Suspendus', value: 48, icon: UserX, color: 'text-red-600 bg-red-50' },
-  { label: 'Diplômés', value: 184, icon: GraduationCap, color: 'text-blue-600 bg-blue-50' },
-  { label: 'Nouvelles inscriptions', value: 312, icon: TrendingUp, color: 'text-violet-600 bg-violet-50' },
+  { label: 'Total étudiants', value: 5842, icon: Users },
+  { label: 'Actifs', value: 5610, icon: UserCheck },
+  { label: 'Suspendus', value: 48, icon: UserX },
+  { label: 'Diplômés', value: 184, icon: GraduationCap },
+  { label: 'Inscriptions', value: 312, icon: TrendingUp },
 ];
 
 /* ═══════════════════════ COMPOSANT ═══════════════════════ */
@@ -120,24 +118,24 @@ export default function AdminEtudiantsPage() {
           <p className="text-slate-500 text-sm mt-0.5">Consultez et gérez tous les étudiants inscrits à l&apos;IUC.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-200 transition-colors shadow-sm">
-            <Download size={15} /> Exporter
+          <button className="flex items-center gap-1.5 bg-white hover:bg-[#fafafa] text-[#171717] text-xs font-medium px-3 py-2 rounded-md border border-[#e5e5e5] transition-colors">
+            <Download size={13} className="text-[#737373]" /> Exporter
           </button>
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20">
-            <UserPlus size={15} /> Ajouter un étudiant
+          <button className="flex items-center gap-1.5 bg-[#171717] hover:bg-[#262626] text-white text-xs font-medium px-3.5 py-2 rounded-md transition-colors">
+            <UserPlus size={13} /> Ajouter un étudiant
           </button>
         </div>
       </div>
 
       {/* ── Compteurs rapides ── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {STATS_TOP.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-slate-100 p-3.5 shadow-sm hover:shadow-md transition-shadow">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${color}`}>
-              <Icon size={16} />
+        {STATS_TOP.map(({ label, value, icon: Icon }) => (
+          <div key={label} className="bg-white dark:bg-[#121215] rounded-md border border-[#e5e5e5] dark:border-[#27272a] p-3.5 card-hover">
+            <div className="flex items-center justify-between text-[#737373] mb-1">
+              <span className="text-[11px] font-medium uppercase font-mono">{label}</span>
+              <Icon size={14} />
             </div>
-            <p className="text-xl font-black text-slate-900">{value.toLocaleString()}</p>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">{label}</p>
+            <p className="text-xl font-semibold font-mono text-[#171717] dark:text-white">{value.toLocaleString()}</p>
           </div>
         ))}
       </div>
@@ -186,7 +184,7 @@ export default function AdminEtudiantsPage() {
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Statut</span>
               {STATUTS.map(s => (
                 <button key={s} onClick={() => { setStatut(s); setPage(1); }}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border ${statut === s ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>{s}</button>
+                  className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border ${statut === s ? 'bg-[#171717] text-white border-[#171717]' : 'bg-white text-[#737373] border-[#e5e5e5] hover:text-[#171717]'}`}>{s}</button>
               ))}
             </div>
             <div className="w-px bg-slate-200 self-stretch hidden sm:block" />
@@ -195,7 +193,7 @@ export default function AdminEtudiantsPage() {
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Niveau</span>
               {NIVEAUX.map(n => (
                 <button key={n} onClick={() => { setNiveau(n); setPage(1); }}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border ${niveau === n ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>{n}</button>
+                  className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border ${niveau === n ? 'bg-[#171717] text-white border-[#171717]' : 'bg-white text-[#737373] border-[#e5e5e5] hover:text-[#171717]'}`}>{n}</button>
               ))}
             </div>
             <div className="w-px bg-slate-200 self-stretch hidden sm:block" />
@@ -204,7 +202,7 @@ export default function AdminEtudiantsPage() {
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Département</span>
               {DEPARTEMENTS.map(d => (
                 <button key={d} onClick={() => { setDep(d); setPage(1); }}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border ${departement === d ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>{d}</button>
+                  className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border ${departement === d ? 'bg-[#171717] text-white border-[#171717]' : 'bg-white text-[#737373] border-[#e5e5e5] hover:text-[#171717]'}`}>{d}</button>
               ))}
             </div>
           </div>
@@ -271,7 +269,7 @@ export default function AdminEtudiantsPage() {
                         </td>
                         {/* Niveau */}
                         <td className="py-3.5 px-4">
-                          <span className="text-xs bg-violet-50 text-violet-700 font-bold px-2 py-0.5 rounded-lg">{e.niveau}</span>
+                          <span className="text-xs bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] font-mono px-2 py-0.5 rounded">{e.niveau}</span>
                         </td>
                         {/* Statut */}
                         <td className="py-3.5 px-4">
@@ -325,7 +323,7 @@ export default function AdminEtudiantsPage() {
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
                     <button key={n} onClick={() => setPage(n)}
-                      className={`w-8 h-8 rounded-lg text-xs font-bold transition-all border ${page === n ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-200 text-slate-600 hover:bg-white'}`}>
+                      className={`w-7 h-7 rounded text-xs font-medium transition-colors border ${page === n ? 'bg-[#171717] text-white border-[#171717]' : 'border-[#e5e5e5] text-[#737373] hover:bg-[#fafafa]'}`}>
                       {n}
                     </button>
                   ))}
@@ -368,7 +366,7 @@ export default function AdminEtudiantsPage() {
                 <p className="text-xs text-slate-500 truncate mb-3">{e.filiere}</p>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg font-medium">{e.departement}</span>
-                  <span className="text-xs bg-violet-50 text-violet-700 font-bold px-2 py-0.5 rounded-lg">{e.niveau}</span>
+                  <span className="text-xs bg-[#f5f5f5] text-[#171717] border border-[#e5e5e5] font-mono px-2 py-0.5 rounded">{e.niveau}</span>
                 </div>
                 {/* Stats requêtes */}
                 <div className="border-t border-slate-100 pt-3 flex items-center justify-between">
@@ -398,7 +396,7 @@ export default function AdminEtudiantsPage() {
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
                 <button key={n} onClick={() => setPage(n)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all border ${page === n ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}>
+                  className={`w-7 h-7 rounded text-xs font-medium transition-colors border ${page === n ? 'bg-[#171717] text-white border-[#171717]' : 'border-[#e5e5e5] text-[#737373] bg-white hover:bg-[#fafafa]'}`}>
                   {n}
                 </button>
               ))}

@@ -20,21 +20,21 @@ import {
 } from '@/lib/hooks';
 
 const statutStyle: Record<string, string> = {
-  'Soumise':    'bg-blue-100 text-blue-700 ring-1 ring-blue-200',
-  'En attente': 'bg-blue-100 text-blue-700 ring-1 ring-blue-200',
-  'Assignée':   'bg-purple-100 text-purple-700 ring-1 ring-purple-200',
-  'En cours':   'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200',
-  'En attente d\'information': 'bg-orange-100 text-orange-700 ring-1 ring-orange-200',
-  'Résolue':    'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
-  'Rejetée':    'bg-red-100 text-red-700 ring-1 ring-red-200',
-  'Fermée':     'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
+  'Soumise':    'bg-[#f5f5f5] dark:bg-[#18181b] text-[#171717] dark:text-[#f4f4f5] border border-[#e5e5e5] dark:border-[#27272a]',
+  'En attente': 'bg-[#f5f5f5] dark:bg-[#18181b] text-[#171717] dark:text-[#f4f4f5] border border-[#e5e5e5] dark:border-[#27272a]',
+  'Assignée':   'bg-[#f0f0f0] dark:bg-[#27272a] text-[#171717] dark:text-[#f4f4f5] border border-[#d4d4d4] dark:border-[#3f3f46]',
+  'En cours':   'bg-[#171717] dark:bg-white text-white dark:text-black font-semibold shadow-2xs',
+  'En attente d\'information': 'bg-[#f5f5f5] dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border border-[#e5e5e5] dark:border-[#27272a]',
+  'Résolue':    'bg-[#171717] dark:bg-white text-white dark:text-black border border-[#171717] dark:border-white font-semibold',
+  'Rejetée':    'bg-[#fafafa] dark:bg-[#18181b] text-[#737373] dark:text-[#71717a] border border-[#e5e5e5] dark:border-[#27272a] line-through',
+  'Fermée':     'bg-[#f5f5f5] dark:bg-[#18181b] text-[#737373] dark:text-[#71717a] border border-[#e5e5e5] dark:border-[#27272a]',
 };
 
 const prioriteStyle: Record<string, string> = {
-  'Critique': 'bg-red-50 text-red-700',
-  'Haute':    'bg-red-50 text-red-600',
-  'Normale':  'bg-yellow-50 text-yellow-700',
-  'Basse':    'bg-slate-100 text-slate-500',
+  'Critique': 'bg-[#171717] dark:bg-white text-white dark:text-black font-mono',
+  'Haute':    'bg-[#171717] dark:bg-white text-white dark:text-black font-mono',
+  'Normale':  'bg-[#f5f5f5] dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border border-[#e5e5e5] dark:border-[#27272a] font-mono',
+  'Basse':    'bg-[#fafafa] dark:bg-[#18181b] text-[#737373] dark:text-[#71717a] border border-[#e5e5e5] dark:border-[#27272a] font-mono',
 };
 
 const getStatusIcon = (status: string) => {
@@ -191,57 +191,61 @@ export default function AdminRequetesPage() {
   const rejectedRequestsCount = getStatusCount(['Rejetée']);
 
   const STATS_TOP = [
-    { label: 'Total', value: totalRequests, icon: Inbox, color: 'text-slate-600 bg-slate-100', targetId: 'all' },
-    { label: 'En attente', value: pendingRequestsCount, icon: Clock, color: 'text-blue-600 bg-blue-50', targetId: statuses.find((s: any) => s.name === 'En attente')?.id || 'all' },
-    { label: 'En cours', value: inProgressRequestsCount, icon: RefreshCw, color: 'text-yellow-600 bg-yellow-50', targetId: statuses.find((s: any) => s.name === 'En cours')?.id || 'all' },
-    { label: 'Résolues', value: resolvedRequestsCount, icon: CheckCircle, color: 'text-emerald-600 bg-emerald-50', targetId: statusResolved?.id || 'all' },
-    { label: 'Rejetées', value: rejectedRequestsCount, icon: XCircle, color: 'text-red-600 bg-red-50', targetId: statusRejected?.id || 'all' },
+    { label: 'Total', value: totalRequests, icon: Inbox, targetId: 'all' },
+    { label: 'En attente', value: pendingRequestsCount, icon: Clock, targetId: statuses.find((s: any) => s.name === 'En attente')?.id || 'all' },
+    { label: 'En cours', value: inProgressRequestsCount, icon: RefreshCw, targetId: statuses.find((s: any) => s.name === 'En cours')?.id || 'all' },
+    { label: 'Résolues', value: resolvedRequestsCount, icon: CheckCircle, targetId: statusResolved?.id || 'all' },
+    { label: 'Rejetées', value: rejectedRequestsCount, icon: XCircle, targetId: statusRejected?.id || 'all' },
   ];
 
   // Skeletons while loading
   const showLoading = statsLoading || requestsLoading || statusesLoading || prioritiesLoading || servicesLoading;
 
   return (
-    <div className="p-4 sm:p-6 space-y-5">
+    <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
 
       {/* ── En-tête ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#e5e5e5] dark:border-[#27272a] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-slate-900">
-              {isAgent ? 'Mes requêtes' : 'Gestion des requêtes'}
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#171717] dark:text-white">
+              {isAgent ? 'Mes requêtes assignées' : 'Registre des requêtes & tickets'}
             </h1>
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
-              {pagination.total}
+            <span className="bg-[#f0f0f0] dark:bg-[#18181b] border border-[#e5e5e5] dark:border-[#27272a] text-[#171717] dark:text-[#f4f4f5] text-[11px] font-mono font-medium px-2 py-0.5 rounded">
+              {pagination.total} tickets
             </span>
           </div>
-          <p className="text-slate-500 text-sm mt-0.5">
+          <p className="text-[#737373] dark:text-[#a1a1aa] text-[13px] mt-0.5">
             {isAgent 
-              ? 'Consultez et traitez vos requêtes assignées.' 
-              : 'Consultez, traitez et suivez toutes les requêtes étudiantes.'}
+              ? 'Dossiers étudiants et réclamations sous votre charge directe'
+              : 'Supervision générale de l\'ensemble des requêtes académiques et administratives'}
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shadow-emerald-600/20 cursor-pointer">
-          <Download size={15} />
-          Exporter
+        <button className="flex items-center gap-2 bg-white dark:bg-[#18181b] hover:bg-[#fafafa] dark:hover:bg-[#27272a] text-[#171717] dark:text-white border border-[#e5e5e5] dark:border-[#27272a] text-xs font-semibold px-3 py-1.5 rounded-md transition-colors shadow-2xs cursor-pointer">
+          <Download size={13} />
+          Exporter CSV
         </button>
       </div>
 
-      {/* ── Compteurs rapides ── */}
+      {/* ── Compteurs rapides (Vercel Style) ── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {STATS_TOP.map(({ label, value, icon: Icon, color, targetId }) => (
+        {STATS_TOP.map(({ label, value, icon: Icon, targetId }) => (
           <button
             key={label}
             onClick={() => { setStatusId(targetId); setPage(1); }}
-            className={`bg-white rounded-xl border border-slate-100 p-3.5 shadow-sm hover:shadow-md transition-all text-left group cursor-pointer ${
-              statusId === targetId ? 'ring-2 ring-emerald-500' : ''
+            className={`rounded-lg border p-3 transition-all text-left cursor-pointer ${
+              statusId === targetId
+                ? 'border-[#171717] dark:border-white bg-[#fafafa] dark:bg-[#27272a] ring-1 ring-[#171717] dark:ring-white'
+                : 'border-[#e5e5e5] dark:border-[#27272a] bg-white dark:bg-[#121215] hover:border-[#171717] dark:hover:border-[#71717a]'
             }`}
           >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${color}`}>
-              <Icon size={16} />
+            <div className="flex items-center justify-between text-[#737373] dark:text-[#a1a1aa] mb-1.5">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#737373] dark:text-[#a1a1aa]">
+                {label}
+              </span>
+              <Icon size={14} className="text-[#737373] dark:text-[#a1a1aa]" />
             </div>
-            <p className="text-xl font-black text-slate-900">{value}</p>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">{label}</p>
+            <p className="text-xl font-bold font-mono text-[#171717] dark:text-white">{value}</p>
           </button>
         ))}
       </div>
@@ -251,30 +255,30 @@ export default function AdminRequetesPage() {
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => { setAssignedFilter('all'); setPage(1); }}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
               assignedFilter === 'all'
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                : 'bg-white dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:bg-[#fafafa] dark:hover:bg-[#27272a]'
             }`}
           >
             Toutes les requêtes
           </button>
           <button
             onClick={() => { setAssignedFilter('mine'); setPage(1); }}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
               assignedFilter === 'mine'
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                : 'bg-white dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:bg-[#fafafa] dark:hover:bg-[#27272a]'
             }`}
           >
             Mes requêtes assignées
           </button>
           <button
             onClick={() => { setAssignedFilter('unassigned'); setPage(1); }}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
               assignedFilter === 'unassigned'
-                ? 'bg-emerald-600 text-white border-emerald-600'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                : 'bg-white dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:bg-[#fafafa] dark:hover:bg-[#27272a]'
             }`}
           >
             Non assignées
@@ -283,34 +287,32 @@ export default function AdminRequetesPage() {
       )}
 
       {/* ── Barre de recherche + filtres ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+      <div className="bg-white dark:bg-[#121215] rounded-xl border border-[#e5e5e5] dark:border-[#27272a] shadow-2xs p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
           {/* Recherche */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#737373] dark:text-[#a1a1aa] pointer-events-none" />
             <input
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Rechercher par ID, étudiant, titre..."
-              className="w-full h-10 bg-slate-50 rounded-xl pl-9 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400 border border-transparent focus:border-emerald-300 transition-all"
+              placeholder="Rechercher par référence, demandeur, objet..."
+              className="w-full h-9 bg-[#f5f5f5] dark:bg-[#18181b] hover:bg-[#f0f0f0] dark:hover:bg-[#27272a] focus:bg-white dark:focus:bg-[#0c0c0e] border border-[#e5e5e5] dark:border-[#27272a] focus:border-[#171717] dark:focus:border-white rounded-md pl-9 pr-3 text-[13px] text-[#171717] dark:text-white placeholder:text-[#a3a3a3] dark:placeholder:text-[#71717a] outline-none transition-all font-sans"
             />
           </div>
 
           {/* Bouton filtres avancés */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 h-9 px-3 rounded-md text-[12px] font-semibold border transition-all cursor-pointer ${
               showFilters || hasActiveFilters
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                : 'bg-white dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:bg-[#fafafa] dark:hover:bg-[#27272a]'
             }`}
           >
-            <SlidersHorizontal size={15} />
+            <SlidersHorizontal size={13} />
             Filtres
             {hasActiveFilters && (
-              <span className="bg-emerald-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                !
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-white dark:bg-black" />
             )}
           </button>
 
@@ -318,7 +320,7 @@ export default function AdminRequetesPage() {
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="h-10 px-3 rounded-xl text-sm text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all font-medium border border-transparent cursor-pointer"
+              className="h-9 px-2.5 rounded-md text-[12px] text-[#737373] dark:text-[#a1a1aa] hover:text-[#171717] dark:hover:text-white hover:bg-[#f0f0f0] dark:hover:bg-[#18181b] transition-all font-medium cursor-pointer"
             >
               Réinitialiser
             </button>
@@ -327,17 +329,17 @@ export default function AdminRequetesPage() {
 
         {/* Filtres dépliants */}
         {showFilters && (
-          <div className="flex flex-col gap-4 pt-4 border-t border-slate-100 animate-fadeIn">
+          <div className="flex flex-col gap-3.5 pt-3.5 border-t border-[#f5f5f5] dark:border-[#27272a] text-[12px]">
             {/* Statut */}
             <div className="flex items-start sm:items-center gap-2 flex-col sm:flex-row">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide min-w-[70px]">Statut</span>
+              <span className="font-mono uppercase text-[10px] text-[#737373] dark:text-[#a1a1aa] font-semibold min-w-[70px]">Statut</span>
               <div className="flex gap-1 flex-wrap">
                 <button
                   onClick={() => { setStatusId('all'); setPage(1); }}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border cursor-pointer ${
+                  className={`text-[11px] px-2.5 py-1 rounded-md font-medium transition-all border cursor-pointer ${
                     statusId === 'all'
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                      : 'bg-white dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:bg-[#fafafa] dark:hover:bg-[#27272a]'
                   }`}
                 >
                   Tous
@@ -346,10 +348,10 @@ export default function AdminRequetesPage() {
                   <button
                     key={s.id}
                     onClick={() => { setStatusId(s.id); setPage(1); }}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border cursor-pointer ${
+                    className={`text-[11px] px-2.5 py-1 rounded-md font-medium transition-all border cursor-pointer ${
                       statusId === s.id
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                        : 'bg-white dark:bg-[#18181b] text-[#525252] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:bg-[#fafafa] dark:hover:bg-[#27272a]'
                     }`}
                   >
                     {s.name}
@@ -360,14 +362,14 @@ export default function AdminRequetesPage() {
 
             {/* Priorité */}
             <div className="flex items-start sm:items-center gap-2 flex-col sm:flex-row">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wide min-w-[70px]">Priorité</span>
+              <span className="text-xs font-bold text-[#737373] dark:text-[#a1a1aa] uppercase tracking-wide min-w-[70px]">Priorité</span>
               <div className="flex gap-1 flex-wrap">
                 <button
                   onClick={() => { setPriorityId('all'); setPage(1); }}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border cursor-pointer ${
+                  className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border cursor-pointer ${
                     priorityId === 'all'
-                      ? 'bg-emerald-600 text-white border-emerald-600'
-                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                      : 'bg-white dark:bg-[#18181b] text-[#737373] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:text-[#171717] dark:hover:text-white'
                   }`}
                 >
                   Toutes
@@ -376,10 +378,10 @@ export default function AdminRequetesPage() {
                   <button
                     key={p.id}
                     onClick={() => { setPriorityId(p.id); setPage(1); }}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border cursor-pointer ${
+                    className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border cursor-pointer ${
                       priorityId === p.id
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                        : 'bg-white dark:bg-[#18181b] text-[#737373] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:text-[#171717] dark:hover:text-white'
                     }`}
                   >
                     {p.name}
@@ -391,14 +393,14 @@ export default function AdminRequetesPage() {
             {/* Service - seulement pour admin */}
             {isAdmin && (
               <div className="flex items-start sm:items-center gap-2 flex-col sm:flex-row">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide min-w-[70px]">Service</span>
+                <span className="text-xs font-bold text-[#737373] dark:text-[#a1a1aa] uppercase tracking-wide min-w-[70px]">Service</span>
                 <div className="flex gap-1 flex-wrap">
                   <button
                     onClick={() => { setServiceId('all'); setPage(1); }}
-                    className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border cursor-pointer ${
+                    className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border cursor-pointer ${
                       serviceId === 'all'
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                        : 'bg-white dark:bg-[#18181b] text-[#737373] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:text-[#171717] dark:hover:text-white'
                     }`}
                   >
                     Tous
@@ -407,10 +409,10 @@ export default function AdminRequetesPage() {
                     <button
                       key={sv.id}
                       onClick={() => { setServiceId(sv.id); setPage(1); }}
-                      className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all border cursor-pointer ${
+                      className={`text-xs px-2.5 py-1 rounded-md font-medium transition-colors border cursor-pointer ${
                         serviceId === sv.id
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                          : 'bg-white dark:bg-[#18181b] text-[#737373] dark:text-[#a1a1aa] border-[#e5e5e5] dark:border-[#27272a] hover:text-[#171717] dark:hover:text-white'
                       }`}
                     >
                       {sv.name}
@@ -424,29 +426,29 @@ export default function AdminRequetesPage() {
       </div>
 
       {/* ── Tableau / Contenu ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[350px]">
+      <div className="bg-white dark:bg-[#121215] rounded-xl border border-[#e5e5e5] dark:border-[#27272a] shadow-2xs overflow-hidden min-h-[350px]">
         {showLoading ? (
           /* Loading Skeletons */
           <div className="p-5 space-y-4 animate-pulse">
-            <div className="h-10 bg-slate-100 rounded-xl w-full"></div>
+            <div className="h-10 bg-[#f5f5f5] dark:bg-[#18181b] rounded-lg w-full"></div>
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex gap-4 items-center">
-                <div className="w-8 h-8 rounded-full bg-slate-100 shrink-0"></div>
-                <div className="h-5 bg-slate-100 rounded w-1/4"></div>
-                <div className="h-5 bg-slate-100 rounded w-1/5"></div>
-                <div className="h-5 bg-slate-100 rounded w-1/6"></div>
-                <div className="h-5 bg-slate-100 rounded w-20"></div>
-                <div className="h-5 bg-slate-100 rounded w-20"></div>
+                <div className="w-8 h-8 rounded-full bg-[#f5f5f5] dark:bg-[#18181b] shrink-0"></div>
+                <div className="h-5 bg-[#f5f5f5] dark:bg-[#18181b] rounded w-1/4"></div>
+                <div className="h-5 bg-[#f5f5f5] dark:bg-[#18181b] rounded w-1/5"></div>
+                <div className="h-5 bg-[#f5f5f5] dark:bg-[#18181b] rounded w-1/6"></div>
+                <div className="h-5 bg-[#f5f5f5] dark:bg-[#18181b] rounded w-20"></div>
+                <div className="h-5 bg-[#f5f5f5] dark:bg-[#18181b] rounded w-20"></div>
               </div>
             ))}
           </div>
         ) : requestsList.length === 0 ? (
           /* État vide */
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-20 text-[#737373] dark:text-[#a1a1aa]">
             <FileText size={40} className="mb-3 opacity-30" />
-            <p className="font-semibold text-slate-500">Aucune requête trouvée</p>
-            <p className="text-sm mt-1">Modifiez vos filtres ou effectuez une autre recherche.</p>
-            <button onClick={resetFilters} className="mt-4 text-emerald-600 text-sm font-semibold hover:underline cursor-pointer">
+            <p className="font-semibold text-[#171717] dark:text-white">Aucune requête trouvée</p>
+            <p className="text-sm mt-1 text-[#737373] dark:text-[#a1a1aa]">Modifiez vos filtres ou effectuez une autre recherche.</p>
+            <button onClick={resetFilters} className="mt-4 text-[#171717] dark:text-white underline text-sm font-semibold hover:opacity-80 cursor-pointer">
               Réinitialiser les filtres
             </button>
           </div>
@@ -454,7 +456,7 @@ export default function AdminRequetesPage() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[750px]">
-                <thead className="bg-slate-50 border-b border-slate-100">
+                <thead className="bg-[#fafafa] dark:bg-[#18181b] border-b border-[#e5e5e5] dark:border-[#27272a]">
                   <tr>
                     {[
                       { label: 'Référence', col: 'reference' },
@@ -469,7 +471,7 @@ export default function AdminRequetesPage() {
                     ].map(({ label, col }) => (
                       <th
                         key={label}
-                        className={`text-left py-3.5 px-4 text-xs font-bold text-slate-400 uppercase tracking-wide ${col ? 'cursor-pointer hover:text-slate-600 select-none' : ''}`}
+                        className={`text-left py-3.5 px-4 text-xs font-bold text-[#737373] dark:text-[#a1a1aa] uppercase tracking-wide ${col ? 'cursor-pointer hover:text-[#171717] dark:hover:text-white select-none' : ''}`}
                         onClick={() => col && handleSort(col)}
                       >
                         <div className="flex items-center gap-1">
@@ -477,7 +479,7 @@ export default function AdminRequetesPage() {
                           {col && (
                             <ArrowUpDown
                               size={11}
-                              className={sortCol === col ? 'text-emerald-500' : 'text-slate-300'}
+                              className={sortCol === col ? 'text-[#171717] dark:text-white' : 'text-[#a3a3a3] dark:text-[#52525b]'}
                             />
                           )}
                         </div>
@@ -485,45 +487,45 @@ export default function AdminRequetesPage() {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-[#f0f0f0] dark:divide-[#27272a]">
                   {requestsList.map((r: any) => (
-                    <tr key={r.id} className="hover:bg-slate-50/70 transition-colors group">
+                    <tr key={r.id} className="hover:bg-[#fafafa] dark:hover:bg-[#18181b]/70 transition-colors group">
 
                       {/* ID */}
                       <td className="py-3.5 px-4">
-                        <span className="font-mono text-xs font-bold text-slate-500">{r.reference}</span>
+                        <span className="font-mono text-xs font-bold text-[#737373] dark:text-[#a1a1aa]">{r.reference}</span>
                       </td>
 
                       {/* Étudiant */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center text-white text-[10px] font-black shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-[#171717] dark:bg-white text-white dark:text-black flex items-center justify-center text-[10px] font-mono font-bold shrink-0 shadow-2xs">
                             {r.student ? `${r.student.first_name?.[0] || ''}${r.student.last_name?.[0] || ''}`.toUpperCase().slice(0, 2) : '?'}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-slate-800">
+                            <p className="text-xs font-bold text-[#171717] dark:text-white">
                               {r.student ? `${r.student.first_name} ${r.student.last_name}` : 'Inconnu'}
                             </p>
-                            <p className="text-[10px] text-slate-400 font-mono">{r.student?.matricule || 'Sans matricule'}</p>
+                            <p className="text-[10px] text-[#737373] dark:text-[#a1a1aa] font-mono">{r.student?.matricule || 'Sans matricule'}</p>
                           </div>
                         </div>
                       </td>
 
                       {/* Catégorie */}
-                      <td className="py-3.5 px-4 text-xs text-slate-600 max-w-[160px]">
+                      <td className="py-3.5 px-4 text-xs text-[#171717] dark:text-[#d4d4d8] max-w-[160px]">
                         <p className="truncate">{r.category?.name || 'Général'}</p>
                       </td>
 
                       {/* Service */}
                       <td className="py-3.5 px-4">
-                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg font-medium">
+                        <span className="text-xs bg-[#f5f5f5] dark:bg-[#18181b] text-[#525252] dark:text-[#d4d4d8] border border-[#e5e5e5] dark:border-[#27272a] px-2 py-0.5 rounded-md font-medium">
                           {r.service?.name || 'Non assigné'}
                         </span>
                       </td>
 
                       {/* Statut */}
                       <td className="py-3.5 px-4">
-                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg ${statutStyle[r.status?.name] || 'bg-slate-100 text-slate-600'}`}>
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md ${statutStyle[r.status?.name] || 'bg-[#f5f5f5] dark:bg-[#18181b] text-[#737373]'}`}>
                           {getStatusIcon(r.status?.name)}
                           {r.status?.name}
                         </span>
@@ -531,30 +533,30 @@ export default function AdminRequetesPage() {
 
                       {/* Priorité */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            r.priority?.name === 'Critique' || r.priority?.name === 'Haute' ? 'bg-red-500' :
-                            r.priority?.name === 'Normale' ? 'bg-yellow-500' : 'bg-slate-300'
+                            r.priority?.name === 'Critique' || r.priority?.name === 'Haute' ? 'bg-[#171717] dark:bg-white' :
+                            r.priority?.name === 'Normale' ? 'bg-[#737373]' : 'bg-[#a3a3a3]'
                           }`} />
-                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${prioriteStyle[r.priority?.name] || 'bg-slate-100'}`}>
+                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${prioriteStyle[r.priority?.name] || 'bg-[#f5f5f5] dark:bg-[#18181b]'}`}>
                             {r.priority?.name || 'Normale'}
                           </span>
                         </div>
                       </td>
 
                       {/* Date */}
-                      <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-xs text-[#737373] dark:text-[#a1a1aa] whitespace-nowrap">
                         {new Date(r.submitted_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </td>
 
                       {/* Agent */}
                       <td className="py-3.5 px-4">
                         {r.assigned_agent ? (
-                          <span className="text-xs text-slate-600 font-medium">
+                          <span className="text-xs text-[#525252] dark:text-[#d4d4d8] font-medium">
                             {r.assigned_agent.first_name} {r.assigned_agent.last_name[0]}.
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-300 italic">Non assigné</span>
+                          <span className="text-xs text-[#a3a3a3] dark:text-[#71717a] italic">Non assigné</span>
                         )}
                       </td>
 
@@ -563,7 +565,7 @@ export default function AdminRequetesPage() {
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Link
                             href={`/admin/requetes/${r.id}`}
-                            className="w-7 h-7 rounded-lg hover:bg-emerald-50 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-colors"
+                            className="w-7 h-7 rounded-md hover:bg-[#f0f0f0] dark:hover:bg-[#27272a] flex items-center justify-center text-[#737373] dark:text-[#a1a1aa] hover:text-[#171717] dark:hover:text-white transition-colors"
                             title="Voir le détail"
                           >
                             <Eye size={14} />
@@ -573,7 +575,7 @@ export default function AdminRequetesPage() {
                             <button
                               onClick={() => assignToMeMutation.mutate(r.id)}
                               disabled={assignToMeMutation.isPending}
-                              className="w-7 h-7 rounded-lg hover:bg-blue-50 flex items-center justify-center text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                              className="w-7 h-7 rounded-md hover:bg-[#f0f0f0] dark:hover:bg-[#27272a] flex items-center justify-center text-[#737373] dark:text-[#a1a1aa] hover:text-[#171717] dark:hover:text-white transition-colors cursor-pointer"
                               title="M'assigner cette requête"
                             >
                               <UserPlus size={14} />
@@ -583,7 +585,7 @@ export default function AdminRequetesPage() {
                             <button
                               onClick={() => updateStatusMutation.mutate({ id: r.id, statusId: statusResolved.id })}
                               disabled={updateStatusMutation.isPending}
-                              className="w-7 h-7 rounded-lg hover:bg-emerald-50 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                              className="w-7 h-7 rounded-md hover:bg-[#f0f0f0] dark:hover:bg-[#27272a] flex items-center justify-center text-[#737373] dark:text-[#a1a1aa] hover:text-[#171717] dark:hover:text-white transition-colors cursor-pointer"
                               title="Résoudre"
                             >
                               <CheckCircle size={14} />
@@ -593,7 +595,7 @@ export default function AdminRequetesPage() {
                             <button
                               onClick={() => updateStatusMutation.mutate({ id: r.id, statusId: statusRejected.id })}
                               disabled={updateStatusMutation.isPending}
-                              className="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                              className="w-7 h-7 rounded-md hover:bg-[#f0f0f0] dark:hover:bg-[#27272a] flex items-center justify-center text-[#737373] dark:text-[#a1a1aa] hover:text-red-500 transition-colors cursor-pointer"
                               title="Rejeter"
                             >
                               <XCircle size={14} />
@@ -608,35 +610,35 @@ export default function AdminRequetesPage() {
             </div>
 
             {/* ── Pagination ── */}
-            <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-3.5 border-t border-slate-100 bg-slate-50/50">
-              <p className="text-xs text-slate-500">
-                Affichage <span className="font-bold text-slate-700">{(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, pagination.total)}</span> sur <span className="font-bold text-slate-700">{pagination.total}</span> requêtes
+            <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-3.5 border-t border-[#e5e5e5] dark:border-[#27272a] bg-[#fafafa] dark:bg-[#18181b]/50">
+              <p className="text-xs text-[#737373] dark:text-[#a1a1aa]">
+                Affichage <span className="font-bold text-[#171717] dark:text-white">{(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, pagination.total)}</span> sur <span className="font-bold text-[#171717] dark:text-white">{pagination.total}</span> requêtes
               </p>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-md border border-[#e5e5e5] dark:border-[#27272a] flex items-center justify-center text-[#737373] dark:text-[#a1a1aa] bg-white dark:bg-[#18181b] hover:text-[#171717] dark:hover:text-white hover:bg-[#f5f5f5] dark:hover:bg-[#27272a] disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ChevronLeft size={14} />
                 </button>
                 {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setPage(n)}
-                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
-                      page === n
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'border-slate-200 text-slate-600 hover:bg-white hover:text-slate-800'
-                    }`}
-                  >
-                    {n}
-                  </button>
+                    <button
+                      key={n}
+                      onClick={() => setPage(n)}
+                      className={`w-7 h-7 rounded-md text-xs font-medium transition-colors border cursor-pointer ${
+                        page === n
+                          ? 'bg-[#171717] text-white border-[#171717] dark:bg-white dark:text-black dark:border-white'
+                          : 'border-[#e5e5e5] dark:border-[#27272a] text-[#737373] dark:text-[#a1a1aa] bg-white dark:bg-[#18181b] hover:bg-[#f5f5f5] dark:hover:bg-[#27272a]'
+                      }`}
+                    >
+                      {n}
+                    </button>
                 ))}
                 <button
                   onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
                   disabled={page === pagination.totalPages}
-                  className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-md border border-[#e5e5e5] dark:border-[#27272a] flex items-center justify-center text-[#737373] dark:text-[#a1a1aa] bg-white dark:bg-[#18181b] hover:text-[#171717] dark:hover:text-white hover:bg-[#f5f5f5] dark:hover:bg-[#27272a] disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ChevronRight size={14} />
                 </button>

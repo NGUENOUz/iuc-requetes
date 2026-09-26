@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export interface Request {
@@ -46,54 +46,55 @@ export function useStudentRequests(studentId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchRequests() {
-      if (!studentId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error: dbError } = await supabase
-          .from('requests')
-          .select(`
-            id,
-            reference,
-            title,
-            description,
-            submitted_at,
-            status:request_statuses!requests_status_id_fkey(id, name, color),
-            category:request_categories!requests_category_id_fkey(id, name, icon),
-            priority:priorities!requests_priority_id_fkey(id, name, level)
-          `)
-          .eq('student_id', studentId)
-          .order('submitted_at', { ascending: false });
-
-        if (dbError) {
-          console.error('[useStudentRequests] Database error:', dbError);
-          throw dbError;
-        }
-
-        setRequests(data || []);
-
-        // Calculer les statistiques
-        const total = data?.length || 0;
-        const pending = data?.filter(r => r.status.name === 'En attente').length || 0;
-        const in_progress = data?.filter(r => r.status.name === 'En cours').length || 0;
-        const resolved = data?.filter(r => r.status.name === 'Résolue').length || 0;
-        const rejected = data?.filter(r => r.status.name === 'Rejetée').length || 0;
-
-        setStats({ total, pending, in_progress, resolved, rejected });
-      } catch (err: any) {
-        console.error('[useStudentRequests] Error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  const fetchRequests = useCallback(async () => {
+    if (!studentId) {
+      setLoading(false);
+      return;
     }
 
-    fetchRequests();
+    try {
+      setLoading(true);
+      const { data, error: dbError } = await supabase
+        .from('requests')
+        .select(`
+          id,
+          reference,
+          title,
+          description,
+          submitted_at,
+          status:request_statuses!requests_status_id_fkey(id, name, color),
+          category:request_categories!requests_category_id_fkey(id, name, icon),
+          priority:priorities!requests_priority_id_fkey(id, name, level)
+        `)
+        .eq('student_id', studentId)
+        .order('submitted_at', { ascending: false });
+
+      if (dbError) {
+        console.error('[useStudentRequests] Database error:', dbError);
+        throw dbError;
+      }
+
+      setRequests(data || []);
+
+      // Calculer les statistiques
+      const total = data?.length || 0;
+      const pending = data?.filter((r: any) => r.status?.name === 'En attente').length || 0;
+      const in_progress = data?.filter((r: any) => r.status?.name === 'En cours').length || 0;
+      const resolved = data?.filter((r: any) => r.status?.name === 'Résolue').length || 0;
+      const rejected = data?.filter((r: any) => r.status?.name === 'Rejetée').length || 0;
+
+      setStats({ total, pending, in_progress, resolved, rejected });
+    } catch (err: any) {
+      console.error('[useStudentRequests] Error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [studentId]);
 
-  return { requests, stats, loading, error, refetch: () => fetchRequests() };
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
+
+  return { requests, stats, loading, error, refetch: fetchRequests };
 }

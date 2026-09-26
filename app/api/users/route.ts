@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (matchedRoles && matchedRoles.length > 0) {
-        const roleIds = matchedRoles.map(r => r.id);
+        const roleIds = matchedRoles.map((r: any) => r.id);
         query = query.in('role_id', roleIds);
       } else {
         // Aucun rôle correspondant trouvé, retourner une réponse vide

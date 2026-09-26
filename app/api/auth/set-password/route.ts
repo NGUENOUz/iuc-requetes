@@ -8,7 +8,7 @@ import { successResponse, errorResponse, handleError, parseRequestBody, ErrorCod
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await parseRequestBody(request);
+    const body: any = await parseRequestBody(request);
     const { identifier, password } = body;
 
     if (!identifier || !password) {

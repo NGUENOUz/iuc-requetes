@@ -133,33 +133,64 @@ export async function POST(request: NextRequest) {
       .eq('id', validatedData.category_id)
       .single();
 
-    // Récupérer le statut "Soumise"
-    const { data: submittedStatus } = await supabase
-      .from('request_statuses')
-      .select('id')
-      .eq('name', 'Soumise')
-      .single();
+    // ═══════════════════════════════════════════════════════════════
+    // MOTEUR D'AUTOMATISATION ET D'AUTO-ROUTAGE INTELLIGENT
+    // ═══════════════════════════════════════════════════════════════
+    const { getLocalDB } = require('@/lib/db/json-db');
+    const { processRequestAutomation } = require('@/lib/services/automation.service');
+    const db = getLocalDB();
+
+    const autoResult = processRequestAutomation(
+      {
+        id: '',
+        reference: '',
+        student_id: userData!.id,
+        category_id: validatedData.category_id,
+        priority_id: validatedData.priority_id,
+        service_id: category?.service_id,
+        title: validatedData.title,
+        description: validatedData.description,
+      },
+      db
+    );
+
+    // Préparer les données d'insertion adaptées
+    const requestInsertData: any = {
+      student_id: userData!.id,
+      category_id: validatedData.category_id,
+      priority_id: validatedData.priority_id,
+      status_id: autoResult.statusId,
+      service_id: category?.service_id,
+      title: validatedData.title,
+      description: validatedData.description,
+      tags: validatedData.tags || [],
+      metadata: {
+        ...(validatedData.metadata || {}),
+        ...autoResult.metadata,
+      },
+    };
+
+    if (autoResult.isAutoResolved) {
+      requestInsertData.resolved_at = new Date().toISOString();
+      requestInsertData.response_time_hours = 0;
+      requestInsertData.resolution_time_hours = 0;
+    } else if (autoResult.assignedAgent) {
+      requestInsertData.assigned_to = autoResult.assignedAgent.id;
+      requestInsertData.assigned_at = new Date().toISOString();
+      requestInsertData.response_time_hours = 0;
+    }
 
     // Créer la requête
     const { data: newRequest, error: createError } = await supabaseAdmin
       .from('requests')
-      .insert({
-        student_id: userData!.id,
-        category_id: validatedData.category_id,
-        priority_id: validatedData.priority_id,
-        status_id: submittedStatus?.id,
-        service_id: category?.service_id,
-        title: validatedData.title,
-        description: validatedData.description,
-        tags: validatedData.tags || [],
-        metadata: validatedData.metadata || {},
-      })
+      .insert(requestInsertData)
       .select(`
         *,
         student:users!requests_student_id_fkey(id, first_name, last_name, email),
         category:request_categories(*),
         status:request_statuses(*),
         priority:priorities(*),
+        assigned_agent:users!requests_assigned_to_fkey(id, first_name, last_name, email),
         service:services(*)
       `)
       .single();
@@ -179,8 +210,10 @@ export async function POST(request: NextRequest) {
       .insert({
         request_id: newRequest.id,
         user_id: userData.id,
-        action: 'request_created',
-        description: 'Requête créée',
+        action: autoResult.isAutoResolved ? 'auto_resolved' : (autoResult.assignedAgent ? 'auto_assigned' : 'request_created'),
+        description: autoResult.isAutoResolved 
+          ? 'Requête traitée et résolue automatiquement (délivrance instantanée)'
+          : (autoResult.assignedAgent ? `Auto-assignée à ${autoResult.assignedAgent.first_name} ${autoResult.assignedAgent.last_name}` : 'Requête créée'),
       });
 
     // Créer un log d'activité
@@ -188,31 +221,49 @@ export async function POST(request: NextRequest) {
       .from('activity_logs')
       .insert({
         user_id: userData!.id,
-        action: 'request_created',
+        action: autoResult.isAutoResolved ? 'request_auto_resolved' : 'request_created',
         entity_type: 'request',
         entity_id: newRequest.id,
-        description: `Requête créée: ${newRequest.reference}`,
+        description: `Requête ${newRequest.reference}: ${autoResult.isAutoResolved ? 'Auto-Résolue' : (autoResult.assignedAgent ? 'Auto-Assignée' : 'Créée')}`,
       });
 
-    // Notifier les agents du service concerné
-    if (category?.service_id) {
-      const { data: serviceAgents } = await supabase
-        .from('users')
-        .select('id')
-        .eq('service_id', category.service_id)
-        .eq('is_active', true);
+    // Ajouter le commentaire système explicatif si disponible
+    if (autoResult.systemComment) {
+      await supabaseAdmin
+        .from('request_comments')
+        .insert({
+          request_id: newRequest.id,
+          user_id: userData!.id,
+          content: autoResult.systemComment,
+          is_internal: false,
+          is_system: true,
+        });
+    }
 
-      if (serviceAgents && serviceAgents.length > 0) {
-        const notifications = serviceAgents.map(agent => ({
-          user_id: agent.id,
+    // Notification utilisateur
+    if (autoResult.userNotification) {
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: userData!.id,
+          type: autoResult.userNotification.type,
+          title: autoResult.userNotification.title,
+          message: autoResult.userNotification.message,
+          link: `/mes-requetes`,
+        });
+    }
+
+    // Notification agent assigné (le cas échéant)
+    if (autoResult.agentNotification) {
+      await supabaseAdmin
+        .from('notifications')
+        .insert({
+          user_id: autoResult.agentNotification.agentId,
           type: 'new_request',
-          title: 'Nouvelle requête',
-          message: `Une nouvelle requête "${newRequest.title}" a été soumise`,
+          title: autoResult.agentNotification.title,
+          message: autoResult.agentNotification.message,
           link: `/admin/requetes/${newRequest.id}`,
-        }));
-
-        await supabaseAdmin.from('notifications').insert(notifications);
-      }
+        });
     }
 
     return successResponse(newRequest);
