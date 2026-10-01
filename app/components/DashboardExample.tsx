@@ -57,7 +57,7 @@ export function DashboardExample() {
           <ul>
             {notifications?.slice(0, 5).map((notif) => (
               <li key={notif.id}>
-                {notif.is_read ? '✓' : '•'} {notif.title}
+                <span className="font-mono text-xs">{notif.is_read ? '[Lu]' : '[Nouveau]'}</span> {notif.title}
               </li>
             ))}
           </ul>

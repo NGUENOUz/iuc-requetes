@@ -134,10 +134,10 @@ export default function AdminServiceDetailPage({ params }: { params: Promise<{ i
         <select
           value={statusLocal}
           onChange={e => setStatusLocal(e.target.value)}
-          className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 shadow-sm cursor-pointer"
+          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-zinc-200 text-xs font-bold px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 shadow-sm cursor-pointer"
         >
-          <option value="Actif">Statut: Actif 🟢</option>
-          <option value="Inactif">Statut: Temporaire Inactif 🔴</option>
+          <option value="Actif">Statut: Actif</option>
+          <option value="Inactif">Statut: Temporaire Inactif</option>
         </select>
 
         <a href={`mailto:${DEPARTEMENT.chefEmail}`}
@@ -493,8 +493,8 @@ export default function AdminServiceDetailPage({ params }: { params: Promise<{ i
                   L&apos;automatisation des réponses sur les réclamations standards est opérationnelle.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Santé du service: Optimale ✓</div>
-                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Attribution: Équilibrée ⚖</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Santé du service: Optimale</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Attribution: Équilibrée</div>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">

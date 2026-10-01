@@ -464,9 +464,9 @@ export default function AdminEtudiantDetailPage({ params }: { params: Promise<{ 
                   Risque d&apos;abandon : <strong className="text-white font-medium">Faible</strong>.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Engagement ↑</div>
-                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Note litigée ⚠</div>
-                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Boursier ✓</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Engagement Actif</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Note sous recours</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Régime Boursier</div>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">

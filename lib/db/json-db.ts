@@ -24,6 +24,10 @@ export interface DatabaseSchema {
   activity_logs: any[];
   ai_suggestions: any[];
   sessions: any[];
+  courses?: any[];
+  grades?: any[];
+  rooms?: any[];
+  timetable?: any[];
 }
 
 // Lecture synchrone/asynchrone sécurisée
@@ -45,6 +49,10 @@ export function getLocalDB(): DatabaseSchema {
       activity_logs: [],
       ai_suggestions: [],
       sessions: [],
+      courses: [],
+      grades: [],
+      rooms: [],
+      timetable: [],
     };
   }
   try {
@@ -52,7 +60,29 @@ export function getLocalDB(): DatabaseSchema {
       throw new Error(`Base de données introuvable à ${DB_FILE_PATH}`);
     }
     const content = fs.readFileSync(DB_FILE_PATH, 'utf-8');
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+    return {
+      roles: [],
+      services: [],
+      request_statuses: [],
+      priorities: [],
+      request_categories: [],
+      users: [],
+      requests: [],
+      request_comments: [],
+      request_attachments: [],
+      request_history: [],
+      request_ratings: [],
+      notifications: [],
+      activity_logs: [],
+      ai_suggestions: [],
+      sessions: [],
+      courses: [],
+      grades: [],
+      rooms: [],
+      timetable: [],
+      ...parsed,
+    };
   } catch (error) {
     console.error('[JSON-DB] Erreur de lecture de la base:', error);
     throw error;
@@ -157,6 +187,21 @@ function resolveJoins(item: any, tableName: string, db: DatabaseSchema): any {
         email: user.email,
         role: db.roles.find((r) => r.id === user.role_id)?.name
       } : null;
+    }
+  }
+
+  if (tableName === 'grades') {
+    if (result.course_id) {
+      result.course = (db.courses || []).find((c) => c.id === result.course_id) || null;
+    }
+  }
+
+  if (tableName === 'timetable') {
+    if (result.course_id) {
+      result.course = (db.courses || []).find((c) => c.id === result.course_id) || null;
+    }
+    if (result.room_id) {
+      result.room = (db.rooms || []).find((r) => r.id === result.room_id) || null;
     }
   }
 
@@ -388,7 +433,7 @@ export class LocalQueryBuilder {
       if (this.isDelete) {
         const initialLen = table.length;
         db[this.tableName] = table.filter((item: any) => !this.filters.every((fn) => fn(item)));
-        const deletedCount = initialLen - db[this.tableName].length;
+        const deletedCount = initialLen - (db[this.tableName]?.length || 0);
         saveLocalDB(db);
         return { data: null, error: null, count: deletedCount };
       }

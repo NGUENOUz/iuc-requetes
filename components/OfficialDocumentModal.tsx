@@ -37,7 +37,7 @@ export default function OfficialDocumentModal({ isOpen, onClose, document }: Off
           <div className="flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
             <h3 className="font-bold text-xs uppercase tracking-wider font-mono text-zinc-200">
-              Certificat Officiel Numérique IUC
+              Certificat Officiel Numérique CampusLite
             </h3>
           </div>
           <div className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export default function OfficialDocumentModal({ isOpen, onClose, document }: Off
           {/* Filigrane discret d'authenticité */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] select-none">
             <span className="text-9xl font-black font-sans uppercase -rotate-45 tracking-widest text-slate-900">
-              IUC OFFICIEL
+              CAMPUSLITE
             </span>
           </div>
 
@@ -75,36 +75,36 @@ export default function OfficialDocumentModal({ isOpen, onClose, document }: Off
           <div className="border-b-2 border-emerald-800 pb-6 mb-8 text-center text-xs tracking-wider">
             <div className="flex justify-between items-start gap-4">
               <div className="text-left font-sans text-[11px] leading-tight text-slate-700">
-                <p className="font-extrabold text-slate-900">RÉPUBLIQUE DU CAMEROUN</p>
-                <p className="italic text-slate-500">Paix - Travail - Patrie</p>
+                <p className="font-extrabold text-slate-900">RÉPUBLIQUE UNIVERSITAIRE</p>
+                <p className="italic text-slate-500">Excellence - Innovation - Avenir</p>
                 <div className="w-12 h-0.5 bg-emerald-600 my-1" />
                 <p className="font-semibold text-slate-800">MINISTÈRE DE L'ENSEIGNEMENT SUPÉRIEUR</p>
               </div>
 
-              {/* Armoiries / Logo IUC */}
+              {/* Armoiries / Logo CampusLite */}
               <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-700 to-green-600 text-white flex items-center justify-center font-black text-2xl font-sans shadow-md">
-                  IUC
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-700 to-green-600 text-white flex items-center justify-center font-black text-xl font-sans shadow-md">
+                  CL
                 </div>
                 <span className="text-[10px] font-sans font-bold text-emerald-800 mt-1 uppercase tracking-widest">
-                  Pôle d'Excellence
+                  Pôle Académique
                 </span>
               </div>
 
               <div className="text-right font-sans text-[11px] leading-tight text-slate-700">
-                <p className="font-extrabold text-slate-900">REPUBLIC OF CAMEROON</p>
-                <p className="italic text-slate-500">Peace - Work - Fatherland</p>
+                <p className="font-extrabold text-slate-900">HIGHER EDUCATION SYSTEM</p>
+                <p className="italic text-slate-500">Excellence - Innovation - Future</p>
                 <div className="w-12 h-0.5 bg-emerald-600 my-1 ml-auto" />
-                <p className="font-semibold text-slate-800">MINISTRY OF HIGHER EDUCATION</p>
+                <p className="font-semibold text-slate-800">CAMPUSLITE NETWORK</p>
               </div>
             </div>
 
             <div className="mt-4 pt-3 border-t border-slate-200">
               <h2 className="text-sm font-sans font-black tracking-wider uppercase text-slate-900">
-                INSTITUT UNIVERSITAIRE DE LA CÔTE (IUC)
+                RÉSEAU UNIVERSITAIRE CAMPUSLITE
               </h2>
               <p className="font-sans text-[10px] text-slate-600">
-                Campus Principal de Logbessou - Douala, Cameroun | BP: 3001 | Tél: (+237) 699 00 11 22 | www.iuc.cm
+                Campus Universitaire | Système Centralisé de Contrôle et de Certification Numérique
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function OfficialDocumentModal({ isOpen, onClose, document }: Off
           {/* Corps de texte de l'attestation */}
           <div className="text-sm sm:text-base leading-relaxed text-justify space-y-4 my-8 text-slate-800">
             <p>
-              Le Directeur des Affaires Académiques et de la Scolarité de l'Institut Universitaire de la Côte (IUC) soussigné, certifie par la présente que :
+              Le Directeur des Affaires Académiques et de la Scolarité de l'établissement soussigné, certifie par la présente que :
             </p>
 
             <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 font-sans my-4 space-y-2">
@@ -182,23 +182,23 @@ export default function OfficialDocumentModal({ isOpen, onClose, document }: Off
               <div className="font-sans text-[11px] text-slate-500">
                 <p className="font-bold text-slate-900">Vérification Numérique</p>
                 <p>Scannez pour valider</p>
-                <p className="font-mono text-emerald-700 text-[10px]">{document.code}</p>
+                <p className="font-mono text-emerald-700 text-[10px]">campuslite.edu/verify/{document.code}</p>
               </div>
             </div>
 
             {/* Sceau officiel & Signature */}
             <div className="text-right font-sans">
-              <p className="text-xs text-slate-600 mb-1">Fait à Douala, le {document.date || '26 mars 2026'}</p>
+              <p className="text-xs text-slate-600 mb-1">Le {document.date || '01 Octobre 2026'}</p>
               <p className="text-xs font-bold text-slate-900 uppercase">Le Directeur des Affaires Académiques</p>
               
               {/* Sceau graphique */}
               <div className="inline-block relative my-2">
                 <div className="w-24 h-24 rounded-full border-2 border-dashed border-emerald-700/60 flex items-center justify-center rotate-12 text-emerald-800 text-[9px] font-black uppercase text-center p-2">
-                  SCEAU OFFICIEL IUC<br />DIRECTION DES ÉTUDES
+                  SCEAU OFFICIEL CAMPUSLITE<br />DIRECTION DES ÉTUDES
                 </div>
               </div>
 
-              <p className="text-xs font-serif italic text-slate-700">Prof. Emmanuel NGNIMPA</p>
+              <p className="text-xs font-serif italic text-slate-700">Direction Générale des Études</p>
             </div>
           </div>
 

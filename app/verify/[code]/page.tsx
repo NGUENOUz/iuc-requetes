@@ -34,11 +34,11 @@ export default async function VerifyDocumentPage({ params }: VerifyPageProps) {
       <header className="max-w-4xl mx-auto w-full flex items-center justify-between pb-6 border-b border-zinc-800">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-white text-black flex items-center justify-center font-black text-sm tracking-tighter">
-            IUC
+            CL
           </div>
           <div>
             <h1 className="font-bold text-sm tracking-tight text-white leading-none">
-              INSTITUT UNIVERSITAIRE DE LA CÔTE
+              CampusLite
             </h1>
             <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 mt-1">
               Registre Public de Vérification Numérique
@@ -74,7 +74,7 @@ export default async function VerifyDocumentPage({ params }: VerifyPageProps) {
                 </span>
 
                 <h2 className="text-xl font-bold tracking-tight text-white">
-                  {category?.name || 'Attestation Officielle IUC'}
+                  {category?.name || 'Attestation Officielle CampusLite'}
                 </h2>
 
                 <p className="text-xs font-mono text-zinc-400 mt-1">
@@ -127,7 +127,7 @@ export default async function VerifyDocumentPage({ params }: VerifyPageProps) {
               <div className="p-3.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2.5">
                 <CheckCircle2 size={15} className="text-white shrink-0 mt-0.5" />
                 <p className="leading-relaxed">
-                  Ce document a fait l'objet d'un scellement numérique et a été certifié conforme aux archives officielles de l'Institut Universitaire de la Côte.
+                  Ce document a fait l'objet d'un scellement numérique et a été certifié conforme aux archives officielles du réseau universitaire CampusLite.
                 </p>
               </div>
 
@@ -136,7 +136,7 @@ export default async function VerifyDocumentPage({ params }: VerifyPageProps) {
                   href="/"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-white text-black hover:bg-zinc-200 font-bold text-xs transition-colors"
                 >
-                  Accéder au portail IUC
+                  Accéder au portail CampusLite
                 </Link>
               </div>
 
@@ -148,7 +148,7 @@ export default async function VerifyDocumentPage({ params }: VerifyPageProps) {
               </div>
               <h2 className="text-lg font-bold text-white">Vérification du code</h2>
               <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                Le document avec le code <span className="font-mono text-white font-bold">{code}</span> est enregistré dans le registre centralisé IUC.
+                Le document avec le code <span className="font-mono text-white font-bold">{code}</span> est enregistré dans le registre centralisé CampusLite.
               </p>
               <Link
                 href="/"
@@ -164,7 +164,7 @@ export default async function VerifyDocumentPage({ params }: VerifyPageProps) {
 
       {/* Footer */}
       <footer className="max-w-4xl mx-auto w-full text-center pt-6 border-t border-zinc-800 text-[11px] font-mono text-zinc-500">
-        <p>© {new Date().getFullYear()} Institut Universitaire de la Côte (IUC) • Système Central de Contrôle Numérique</p>
+        <p>© {new Date().getFullYear()} CampusLite • Système Central de Contrôle Numérique Universitaire</p>
       </footer>
 
     </div>

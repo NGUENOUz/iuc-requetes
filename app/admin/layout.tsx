@@ -129,13 +129,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {!collapsed ? (
               <>
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-6 h-6 rounded-md bg-[#171717] dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-2xs">
-                    I
+                  <div className="w-6 h-6 rounded-md bg-[#171717] dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-[10px] font-mono shrink-0 shadow-2xs">
+                    CL
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-[13px] text-[#171717] dark:text-white leading-none truncate">
-                        IUC Requêtes
+                        CampusLite
                       </p>
                       <span className="text-[10px] font-mono uppercase bg-[#f0f0f0] dark:bg-[#18181b] border border-[#e5e5e5] dark:border-[#27272a] text-[#525252] dark:text-[#a1a1aa] px-1 py-0.2 rounded font-medium">
                         {isAdmin ? 'Admin' : 'Agent'}
@@ -163,7 +163,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Navigation Items */}
-          <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto overflow-x-hidden">
+          <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto overflow-x-hidden no-scrollbar">
             {navSections.map((section) => (
               <div key={section.label} className="space-y-0.5">
                 {!collapsed && (
@@ -329,7 +329,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </header>
 
           {/* Children Viewport */}
-          <main className="flex-1 overflow-y-auto bg-white dark:bg-[#09090b] text-[#171717] dark:text-[#f4f4f5]">
+          <main className="flex-1 overflow-y-auto no-scrollbar bg-white dark:bg-[#09090b] text-[#171717] dark:text-[#f4f4f5]">
             {children}
           </main>
 

@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IUC Requêtes - Plateforme de Gestion des Requêtes",
-  description: "Plateforme institutionnelle de traitement des requêtes académiques et administratives",
+  title: "CampusLite - Plateforme Universitaire & Gestion Académique",
+  description: "Plateforme institutionnelle multi-établissements pour le suivi des notes, des salles, du planning et des requêtes académiques",
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-150">

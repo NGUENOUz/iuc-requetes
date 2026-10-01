@@ -148,11 +148,11 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
         <select
           value={statutLocal}
           onChange={e => setStatutLocal(e.target.value)}
-          className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 shadow-sm cursor-pointer"
+          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-zinc-200 text-xs font-bold px-3 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-emerald-400 shadow-sm cursor-pointer"
         >
-          <option value="Disponible">Disponible 🟢</option>
-          <option value="Occupé">Occupé 🟡</option>
-          <option value="En congé">En congé 🔵</option>
+          <option value="Disponible">Disponible</option>
+          <option value="Occupé">Occupé</option>
+          <option value="En congé">En congé</option>
         </select>
 
         {/* Changer de rôle */}
@@ -523,7 +523,7 @@ export default function AdminPersonnelDetailPage({ params }: { params: Promise<{
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Charge: Équilibrée (82%)</div>
-                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Rapidité: Top 10% ⚡</div>
+                  <div className="bg-[#262626] border border-white/10 rounded px-2 py-0.5 text-[11px] font-mono text-[#d4d4d4]">Rapidité: Top 10%</div>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-lg bg-[#262626] border border-white/10 flex items-center justify-center shrink-0">

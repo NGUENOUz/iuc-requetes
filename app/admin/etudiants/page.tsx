@@ -282,8 +282,8 @@ export default function AdminEtudiantsPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-black text-slate-800">{e.requetes}</span>
                             <div className="flex gap-1">
-                              <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded-md">{e.resolues} ✓</span>
-                              {e.enCours > 0 && <span className="text-[10px] bg-yellow-100 text-yellow-700 font-bold px-1.5 py-0.5 rounded-md">{e.enCours} ⟳</span>}
+                              <span className="text-[10px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded-md">{e.resolues} résolues</span>
+                              {e.enCours > 0 && <span className="text-[10px] bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 font-bold px-1.5 py-0.5 rounded-md">{e.enCours} en cours</span>}
                             </div>
                           </div>
                         </td>

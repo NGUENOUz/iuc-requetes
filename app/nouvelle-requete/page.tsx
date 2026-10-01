@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, FileText, Upload, X, AlertCircle, CheckCircle,
   Send, Home, Paperclip, Loader2, Zap, ShieldCheck, Printer, ExternalLink
@@ -21,14 +21,15 @@ const PRIORITES = [
 
 function NouvelleRequeteContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { student, loading: studentLoading } = useStudent();
   const { categories, loading: categoriesLoading } = useCategories();
   
   const [formData, setFormData] = useState({
-    titre: '',
+    titre: searchParams.get('titre') || '',
     categorie: '',
     priorite: '',
-    description: '',
+    description: searchParams.get('description') || '',
   });
   const [fichiers, setFichiers] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -46,6 +47,37 @@ function NouvelleRequeteContent() {
   });
 
   const selectedCategoryObj = categories.find((c) => c.id === formData.categorie);
+
+  // Détecter source et pré-remplir la catégorie appropriée
+  useEffect(() => {
+    const source = searchParams.get('source');
+    const paramTitre = searchParams.get('titre');
+    const paramDesc = searchParams.get('description');
+
+    if (categories.length > 0) {
+      if (source === 'releve_notes') {
+        const claimCat = categories.find((c) => c.name.toLowerCase().includes('réclamation') || c.name.toLowerCase().includes('note'));
+        if (claimCat) {
+          setFormData((prev) => ({
+            ...prev,
+            categorie: claimCat.id,
+            titre: paramTitre || prev.titre,
+            description: paramDesc || prev.description,
+          }));
+        }
+      } else if (source === 'planner_salle') {
+        const roomCat = categories.find((c) => c.name.toLowerCase().includes('matériel') || c.name.toLowerCase().includes('salle') || c.name.toLowerCase().includes('panne'));
+        if (roomCat) {
+          setFormData((prev) => ({
+            ...prev,
+            categorie: roomCat.id,
+            titre: paramTitre || prev.titre,
+            description: paramDesc || prev.description,
+          }));
+        }
+      }
+    }
+  }, [categories, searchParams]);
 
   // Définir une priorité par défaut une fois les données chargées
   useEffect(() => {
@@ -351,7 +383,7 @@ function NouvelleRequeteContent() {
           Retour au tableau de bord
         </Link>
         <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
-          Système IUC v2.5
+          CampusLite v3.0
         </span>
       </div>
 
@@ -420,7 +452,7 @@ function NouvelleRequeteContent() {
                       </span>
                       {isAuto && (
                         <span className="shrink-0 text-[9px] font-mono uppercase bg-black text-white px-1.5 py-0.2 rounded font-bold">
-                          ⚡ Instant
+                          Immédiat
                         </span>
                       )}
                     </div>
@@ -432,7 +464,7 @@ function NouvelleRequeteContent() {
                   <div className="mt-3 pt-2 border-t border-zinc-100 flex items-center justify-between text-[10px] font-mono text-zinc-400">
                     <span>SLA : {category.sla_hours || 48}h</span>
                     <span className={isSelected ? 'text-black font-bold' : 'text-zinc-400'}>
-                      {isSelected ? '✓ Actif' : 'Choisir'}
+                      {isSelected ? 'Sélectionné' : 'Choisir'}
                     </span>
                   </div>
                 </button>
@@ -623,7 +655,13 @@ function NouvelleRequeteContent() {
 export default function NouvelleRequetePage() {
   return (
     <StudentLayout>
-      <NouvelleRequeteContent />
+      <Suspense fallback={
+        <div className="p-12 text-center font-mono text-xs text-zinc-400">
+          Chargement du formulaire...
+        </div>
+      }>
+        <NouvelleRequeteContent />
+      </Suspense>
     </StudentLayout>
   );
 }

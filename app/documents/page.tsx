@@ -69,7 +69,7 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('iuc_user');
+      const stored = localStorage.getItem('campuslite_user') || localStorage.getItem('iuc_user');
       if (stored) {
         const u = JSON.parse(stored);
         setDocuments(prev => prev.map(doc => {
@@ -129,7 +129,7 @@ export default function DocumentsPage() {
                 Coffre-fort Numérique & Certificats
               </h1>
               <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Tous les documents délivrés par l'IUC comportent une signature numérique scellée et un QR Code de vérification infalsifiable vérifiable par les autorités, consulats et universités partenaires.
+                Tous les documents délivrés via CampusLite comportent une signature numérique scellée et un QR Code de vérification infalsifiable vérifiable par les autorités, consulats et universités partenaires.
               </p>
             </div>
             
@@ -146,7 +146,7 @@ export default function DocumentsPage() {
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
             <input
               type="text"
-              placeholder="Rechercher par titre ou référence QR (ex: CERT-IUC)..."
+              placeholder="Rechercher par titre ou référence QR (ex: CERT-CL)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-black focus:bg-white transition-all font-sans"

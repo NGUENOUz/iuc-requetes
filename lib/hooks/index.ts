@@ -14,13 +14,14 @@ export {
   useDeleteAllNotifications 
 } from './useData';
 export { useAgentStats, useAgentRecentRequests, useAgentRequestChart, useAgentStatusDistribution } from './useAgentStats';
-
+export { useAcademicGrades, useTimetable } from './useAcademic';
 
 export type { StudentProfile } from './useStudent';
 export type { Request, RequestStats } from './useStudentRequests';
 export type { Category } from './useCategories';
 export type { AISuggestion } from './useAISuggestions';
 export type { ChatMessage } from './useAIChat';
+
 
 
 

@@ -301,8 +301,14 @@ export default function AdminRequeteDetailPage({ params }: { params: Promise<{ i
                 {getStatusIcon(request.status?.name)}
                 {request.status?.name}
               </span>
-              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-lg ${prioriteStyle[request.priority?.name] || 'bg-slate-100'}`}>
-                {request.priority?.name === 'Critique' || request.priority?.name === 'Haute' ? '🔴 ' : request.priority?.name === 'Normale' ? '🟡 ' : '🟢 '}
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-lg flex items-center gap-1.5 ${prioriteStyle[request.priority?.name] || 'bg-slate-100'}`}>
+                <span className={`w-2 h-2 rounded-full ${
+                  request.priority?.name === 'Critique' || request.priority?.name === 'Haute'
+                    ? 'bg-rose-500'
+                    : request.priority?.name === 'Normale'
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+                }`} />
                 Priorité {request.priority?.name || 'Normale'}
               </span>
             </div>
