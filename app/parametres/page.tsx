@@ -1,19 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Shield, Bell, Eye, EyeOff, Lock, Mail,
-  Smartphone, CheckCircle, Home, Settings, LogOut, Trash2,
-  AlertCircle, Save
+  Shield, Bell, Lock, Mail, Smartphone,
+  Settings, LogOut, Trash2, AlertCircle, Save, CheckCircle2,
+  ChevronRight, Laptop, Moon, Sun, ArrowLeft
 } from 'lucide-react';
+import { toast } from 'sonner';
 import StudentLayout from '../components/StudentLayout';
+import GlassCard from '@/components/ui/GlassCard';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import StatusBadge from '@/components/ui/StatusBadge';
+import { useTheme } from '@/components/ThemeProvider';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { useRouter } from 'next/navigation';
 
-function ParametresContent() {
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+export default function ParametresPage() {
+  const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
+  const { signOut } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<'security' | 'notifications' | 'preferences'>('security');
+
   const [passwordForm, setPasswordForm] = useState({
     current: '',
     new: '',
@@ -31,415 +41,428 @@ function ParametresContent() {
 
   const [preferences, setPreferences] = useState({
     langue: 'fr',
-    theme: 'light',
   });
 
-  const [saving, setSaving] = useState(false);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  const [preferencesSuccess, setPreferencesSuccess] = useState(false);
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswordForm(prev => ({ ...prev, [name]: value }));
-  };
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setSaving(false);
-    setPasswordSuccess(true);
+    if (!passwordForm.current || !passwordForm.new || !passwordForm.confirm) {
+      toast.error('Veuillez remplir tous les champs');
+      return;
+    }
+    if (passwordForm.new !== passwordForm.confirm) {
+      toast.error('Les nouveaux mots de passe ne correspondent pas');
+      return;
+    }
+    if (passwordForm.new.length < 8) {
+      toast.error('Le mot de passe doit comporter au moins 8 caractères');
+      return;
+    }
+
+    setSavingPassword(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setSavingPassword(false);
+    toast.success('Mot de passe mis à jour avec succès');
     setPasswordForm({ current: '', new: '', confirm: '' });
-    setTimeout(() => setPasswordSuccess(false), 3000);
   };
 
-  const handleNotificationToggle = (key: string) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+  const handleNotificationToggle = (key: keyof typeof notifications) => {
+    setNotifications((prev) => {
+      const updated = { ...prev, [key]: !prev[key] };
+      toast.success('Préférence de notification mise à jour');
+      return updated;
+    });
   };
 
-  const handlePreferenceChange = (key: string, value: string) => {
-    setPreferences(prev => ({ ...prev, [key]: value }));
+  const handleSavePreferences = async () => {
+    setSavingPrefs(true);
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    setSavingPrefs(false);
+    toast.success('Préférences enregistrées');
   };
 
-  const savePreferences = async () => {
-    setSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setSaving(false);
-    setPreferencesSuccess(true);
-    setTimeout(() => setPreferencesSuccess(false), 3000);
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/');
   };
 
   return (
-    <div className="p-3 sm:p-6 space-y-5">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500">
-        <Link href="/dashboard" className="hover:text-emerald-600 transition-colors flex items-center gap-1">
-          <Home size={14} />
-          Tableau de bord
-        </Link>
-        <span>/</span>
-        <span className="text-slate-900 font-medium">Paramètres</span>
-      </div>
-
-      {/* Bouton retour */}
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-emerald-600 font-medium transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Retour au tableau de bord
-      </Link>
-
-      {/* En-tête */}
-      <div className="bg-gradient-to-r from-slate-700 to-slate-500 rounded-2xl p-6 text-white">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-            <Settings size={24} />
+    <StudentLayout>
+      <div className="max-w-5xl mx-auto space-y-6">
+        
+        {/* Fil d'Ariane & En-tête */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs text-fg-muted">
+            <Link href="/dashboard" className="hover:text-fg transition-colors">
+              Tableau de bord
+            </Link>
+            <span>/</span>
+            <span className="text-fg font-medium">Paramètres</span>
           </div>
-          <div>
-            <h1 className="text-2xl font-black">Paramètres</h1>
-            <p className="text-slate-200 text-sm">Gérez votre compte et vos préférences</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages de succès */}
-      {passwordSuccess && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle size={20} className="text-emerald-600" />
-          <p className="text-sm font-semibold text-emerald-900">
-            Votre mot de passe a été modifié avec succès !
-          </p>
-        </div>
-      )}
-
-      {preferencesSuccess && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle size={20} className="text-emerald-600" />
-          <p className="text-sm font-semibold text-emerald-900">
-            Vos préférences ont été enregistrées !
-          </p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Menu latéral */}
-        <div className="lg:col-span-1 space-y-3">
-          <div className="bg-white rounded-2xl border shadow-sm p-3">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-emerald-50 text-emerald-700 font-semibold text-sm">
-              <Shield size={18} />
-              Sécurité
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors">
-              <Bell size={18} />
-              Notifications
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors">
-              <Settings size={18} />
-              Préférences
-            </button>
-          </div>
-
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle size={20} className="text-red-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-red-900 text-sm mb-1">Zone dangereuse</p>
-                <p className="text-xs text-red-700 mb-3">
-                  Ces actions sont irréversibles. Procédez avec prudence.
-                </p>
-                <button className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
-                  <Trash2 size={14} />
-                  Supprimer mon compte
-                </button>
-              </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
+                Paramètres du compte
+              </h1>
+              <p className="text-xs text-fg-muted">
+                Sécurité d&apos;accès, alertes académiques et préférences d&apos;affichage
+              </p>
             </div>
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" leftIcon={<ArrowLeft size={14} />}>
+                Retour
+              </Button>
+            </Link>
           </div>
         </div>
 
-        {/* Contenu principal */}
-        <div className="lg:col-span-2 space-y-5">
-          {/* Sécurité et mot de passe */}
-          <div className="bg-white rounded-2xl border shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield size={20} className="text-slate-700" />
-              <h2 className="font-bold text-slate-900">Sécurité et mot de passe</h2>
-            </div>
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              {/* Mot de passe actuel */}
-              <div>
-                <label htmlFor="current" className="block text-sm font-semibold text-slate-700 mb-2">
-                  Mot de passe actuel
-                </label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    id="current"
-                    name="current"
-                    value={passwordForm.current}
-                    onChange={handlePasswordChange}
-                    className="w-full h-11 bg-slate-50 rounded-xl pl-10 pr-12 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-emerald-400"
-                    placeholder="Entrez votre mot de passe actuel"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+        {/* Disposition Principale en 2 colonnes */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          
+          {/* ── Navigation Latérale des Onglets ── */}
+          <div className="md:col-span-4 space-y-4">
+            <GlassCard variant="glass" className="p-2 space-y-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab('security')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                  activeTab === 'security'
+                    ? 'bg-accent text-accent-fg shadow-xs'
+                    : 'text-fg-secondary hover:text-fg hover:bg-surface-muted/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Shield size={16} />
+                  <span>Sécurité & Accès</span>
                 </div>
-              </div>
-
-              {/* Nouveau mot de passe */}
-              <div>
-                <label htmlFor="new" className="block text-sm font-semibold text-slate-700 mb-2">
-                  Nouveau mot de passe
-                </label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    id="new"
-                    name="new"
-                    value={passwordForm.new}
-                    onChange={handlePasswordChange}
-                    className="w-full h-11 bg-slate-50 rounded-xl pl-10 pr-12 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-emerald-400"
-                    placeholder="Entrez votre nouveau mot de passe"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirmer mot de passe */}
-              <div>
-                <label htmlFor="confirm" className="block text-sm font-semibold text-slate-700 mb-2">
-                  Confirmer le nouveau mot de passe
-                </label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirm"
-                    name="confirm"
-                    value={passwordForm.confirm}
-                    onChange={handlePasswordChange}
-                    className="w-full h-11 bg-slate-50 rounded-xl pl-10 pr-12 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-emerald-400"
-                    placeholder="Confirmez votre nouveau mot de passe"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
+                <ChevronRight size={14} className="opacity-60" />
+              </button>
 
               <button
-                type="submit"
-                disabled={saving || !passwordForm.current || !passwordForm.new || !passwordForm.confirm}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold px-5 py-2.5 rounded-xl transition-colors"
+                type="button"
+                onClick={() => setActiveTab('notifications')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                  activeTab === 'notifications'
+                    ? 'bg-accent text-accent-fg shadow-xs'
+                    : 'text-fg-secondary hover:text-fg hover:bg-surface-muted/60'
+                }`}
               >
-                {saving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Modification en cours...
-                  </>
-                ) : (
-                  <>
-                    <Save size={16} />
-                    Changer le mot de passe
-                  </>
-                )}
+                <div className="flex items-center gap-2.5">
+                  <Bell size={16} />
+                  <span>Notifications</span>
+                </div>
+                <ChevronRight size={14} className="opacity-60" />
               </button>
-            </form>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('preferences')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                  activeTab === 'preferences'
+                    ? 'bg-accent text-accent-fg shadow-xs'
+                    : 'text-fg-secondary hover:text-fg hover:bg-surface-muted/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Settings size={16} />
+                  <span>Préférences & Thème</span>
+                </div>
+                <ChevronRight size={14} className="opacity-60" />
+              </button>
+            </GlassCard>
+
+            {/* Déconnexion rapide */}
+            <GlassCard variant="glass" className="p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-surface-muted border border-line flex items-center justify-center shrink-0 text-fg">
+                  <LogOut size={15} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-fg">Fin de session</h4>
+                  <p className="text-[11px] text-fg-muted mt-0.5">
+                    Déconnectez-vous de manière sécurisée de cet appareil.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                fullWidth
+                onClick={handleLogout}
+                leftIcon={<LogOut size={13} />}
+              >
+                Se déconnecter
+              </Button>
+            </GlassCard>
+
+            {/* Zone de Danger */}
+            <GlassCard variant="glass" className="p-4 border-danger/30 space-y-2">
+              <div className="flex items-center gap-2 text-danger-fg text-xs font-semibold">
+                <AlertCircle size={15} />
+                <span>Zone administrative</span>
+              </div>
+              <p className="text-[11px] text-fg-muted">
+                La clôture définitive ou la purge du compte nécessite l&apos;accord de la scolarité centrale.
+              </p>
+              <Button
+                variant="danger"
+                size="sm"
+                fullWidth
+                onClick={() => toast.info('Veuillez contacter le bureau de la scolarité pour toute clôture de dossier')}
+                leftIcon={<Trash2 size={13} />}
+              >
+                Demande de désactivation
+              </Button>
+            </GlassCard>
           </div>
 
-          {/* Notifications */}
-          <div className="bg-white rounded-2xl border shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Bell size={20} className="text-slate-700" />
-              <h2 className="font-bold text-slate-900">Préférences de notification</h2>
-            </div>
+          {/* ── Contenu de l'onglet actif ── */}
+          <div className="md:col-span-8 space-y-6">
+            
+            {/* ONGLET 1 : SÉCURITÉ */}
+            {activeTab === 'security' && (
+              <GlassCard variant="glass" withShine={true} className="p-5 sm:p-6 space-y-6">
+                <div className="pb-4 border-b border-line/60">
+                  <h2 className="text-base font-bold text-fg">Changement de mot de passe</h2>
+                  <p className="text-xs text-fg-muted mt-0.5">
+                    Utilisez au minimum 8 caractères incluant chiffres et symboles.
+                  </p>
+                </div>
 
-            <div className="space-y-4">
-              {/* Canaux */}
-              <div>
-                <p className="text-sm font-semibold text-slate-700 mb-3">Canaux de notification</p>
-                <div className="space-y-2">
-                  <label className="flex items-center justify-between p-3 rounded-xl bg-slate-50 cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <Mail size={18} className="text-slate-500" />
+                <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                  <Input
+                    label="Mot de passe actuel"
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={passwordForm.current}
+                    onChange={(e) => setPasswordForm((p) => ({ ...p, current: e.target.value }))}
+                    leftIcon={<Lock size={15} />}
+                    required
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Input
+                      label="Nouveau mot de passe"
+                      type="password"
+                      placeholder="Minimum 8 caractères"
+                      value={passwordForm.new}
+                      onChange={(e) => setPasswordForm((p) => ({ ...p, new: e.target.value }))}
+                      leftIcon={<Lock size={15} />}
+                      required
+                    />
+
+                    <Input
+                      label="Confirmer le nouveau mot de passe"
+                      type="password"
+                      placeholder="Répétez le mot de passe"
+                      value={passwordForm.confirm}
+                      onChange={(e) => setPasswordForm((p) => ({ ...p, confirm: e.target.value }))}
+                      leftIcon={<Lock size={15} />}
+                      required
+                    />
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      isLoading={savingPassword}
+                      leftIcon={<Save size={14} />}
+                    >
+                      Enregistrer le mot de passe
+                    </Button>
+                  </div>
+                </form>
+
+                {/* Historique de session */}
+                <div className="pt-6 border-t border-line/60 space-y-3">
+                  <h3 className="text-xs font-semibold text-fg">Session active</h3>
+                  <div className="p-3 rounded-lg bg-surface-muted/60 border border-line flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <Laptop size={16} className="text-fg-muted" />
                       <div>
-                        <p className="font-medium text-slate-900 text-sm">Email</p>
-                        <p className="text-xs text-slate-500">Recevoir des notifications par email</p>
+                        <p className="font-semibold text-fg">Navigateur Web actuel</p>
+                        <p className="text-[11px] text-fg-muted font-mono">Dernière activité il y a quelques instants</p>
+                      </div>
+                    </div>
+                    <StatusBadge variant="success">Active</StatusBadge>
+                  </div>
+                </div>
+              </GlassCard>
+            )}
+
+            {/* ONGLET 2 : NOTIFICATIONS */}
+            {activeTab === 'notifications' && (
+              <GlassCard variant="glass" withShine={true} className="p-5 sm:p-6 space-y-6">
+                <div className="pb-4 border-b border-line/60">
+                  <h2 className="text-base font-bold text-fg">Canaux de notification</h2>
+                  <p className="text-xs text-fg-muted mt-0.5">
+                    Définissez comment vous souhaitez être averti des réponses de l&apos;administration.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div
+                    onClick={() => handleNotificationToggle('email')}
+                    className="p-3.5 rounded-lg bg-surface-muted/60 border border-line flex items-center justify-between cursor-pointer hover:border-line-hover transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-fg">
+                        <Mail size={15} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-fg">Notifications par Email</p>
+                        <p className="text-[11px] text-fg-muted">Relevés officiels et accusés d&apos;enregistrement</p>
                       </div>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.email}
-                      onChange={() => handleNotificationToggle('email')}
-                      className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-400"
+                      onChange={() => {}}
+                      className="w-4 h-4 rounded border-line text-accent accent-accent pointer-events-none"
                     />
-                  </label>
+                  </div>
 
-                  <label className="flex items-center justify-between p-3 rounded-xl bg-slate-50 cursor-pointer">
+                  <div
+                    onClick={() => handleNotificationToggle('sms')}
+                    className="p-3.5 rounded-lg bg-surface-muted/60 border border-line flex items-center justify-between cursor-pointer hover:border-line-hover transition-colors"
+                  >
                     <div className="flex items-center gap-3">
-                      <Smartphone size={18} className="text-slate-500" />
+                      <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-fg">
+                        <Smartphone size={15} />
+                      </div>
                       <div>
-                        <p className="font-medium text-slate-900 text-sm">SMS</p>
-                        <p className="text-xs text-slate-500">Recevoir des notifications par SMS</p>
+                        <p className="text-xs font-semibold text-fg">Alertes SMS instantanées</p>
+                        <p className="text-[11px] text-fg-muted">Urgences de planning et fermeture d&apos;amphithéâtres</p>
                       </div>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.sms}
-                      onChange={() => handleNotificationToggle('sms')}
-                      className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-400"
+                      onChange={() => {}}
+                      className="w-4 h-4 rounded border-line text-accent accent-accent pointer-events-none"
                     />
-                  </label>
+                  </div>
                 </div>
-              </div>
 
-              {/* Types de notifications */}
-              <div>
-                <p className="text-sm font-semibold text-slate-700 mb-3">Types de notifications</p>
-                <div className="space-y-2">
-                  {[
-                    { key: 'requeteCreee', label: 'Requête créée', desc: 'Confirmation de création de requête' },
-                    { key: 'requeteTraitee', label: 'Requête traitée', desc: 'Quand une requête est résolue' },
-                    { key: 'nouveauMessage', label: 'Nouveau message', desc: 'Quand vous recevez une réponse' },
-                    { key: 'rappels', label: 'Rappels', desc: 'Rappels pour actions en attente' },
-                  ].map(({ key, label, desc }) => (
-                    <label key={key} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 cursor-pointer">
-                      <div>
-                        <p className="font-medium text-slate-900 text-sm">{label}</p>
-                        <p className="text-xs text-slate-500">{desc}</p>
+                <div className="pt-4 border-t border-line/60 space-y-3">
+                  <h3 className="text-xs font-semibold text-fg">Événements déclencheurs</h3>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'requeteCreee' as const, label: 'Dépôt d’une requête', desc: 'Confirmation immédiate avec numéro de référence' },
+                      { key: 'requeteTraitee' as const, label: 'Mise à jour de statut', desc: 'Passage en instruction, validation ou rejet de dossier' },
+                      { key: 'nouveauMessage' as const, label: 'Message d’un agent', desc: 'Précisions demandées par la scolarité ou les enseignants' },
+                      { key: 'rappels' as const, label: 'Rappels de cours & examens', desc: 'Rappels de créneau 1 heure avant la séance' },
+                    ].map(({ key, label, desc }) => (
+                      <div
+                        key={key}
+                        onClick={() => handleNotificationToggle(key)}
+                        className="p-3 rounded-lg bg-surface/50 border border-line flex items-center justify-between cursor-pointer hover:border-line-hover transition-colors"
+                      >
+                        <div>
+                          <p className="text-xs font-medium text-fg">{label}</p>
+                          <p className="text-[11px] text-fg-muted">{desc}</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={notifications[key]}
+                          onChange={() => {}}
+                          className="w-4 h-4 rounded border-line text-accent accent-accent pointer-events-none"
+                        />
                       </div>
-                      <input
-                        type="checkbox"
-                        checked={notifications[key as keyof typeof notifications] as boolean}
-                        onChange={() => handleNotificationToggle(key)}
-                        className="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-400"
-                      />
-                    </label>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
+              </GlassCard>
+            )}
 
-          {/* Préférences */}
-          <div className="bg-white rounded-2xl border shadow-sm p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Settings size={20} className="text-slate-700" />
-              <h2 className="font-bold text-slate-900">Préférences générales</h2>
-            </div>
-
-            <div className="space-y-4">
-              {/* Langue */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Langue</label>
-                <select
-                  value={preferences.langue}
-                  onChange={(e) => handlePreferenceChange('langue', e.target.value)}
-                  className="w-full h-11 bg-slate-50 rounded-xl px-4 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-emerald-400"
-                >
-                  <option value="fr">Français</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-
-              {/* Thème */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Thème</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handlePreferenceChange('theme', 'light')}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${
-                      preferences.theme === 'light'
-                        ? 'border-emerald-500 bg-emerald-50'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900 text-sm">Clair</p>
-                    <p className="text-xs text-slate-500">Thème par défaut</p>
-                  </button>
-                  <button
-                    onClick={() => handlePreferenceChange('theme', 'dark')}
-                    className={`p-3 rounded-xl border-2 text-left transition-all ${
-                      preferences.theme === 'dark'
-                        ? 'border-emerald-500 bg-emerald-50'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900 text-sm">Sombre</p>
-                    <p className="text-xs text-slate-500">Pour les yeux sensibles</p>
-                  </button>
+            {/* ONGLET 3 : PRÉFÉRENCES & THÈME */}
+            {activeTab === 'preferences' && (
+              <GlassCard variant="glass" withShine={true} className="p-5 sm:p-6 space-y-6">
+                <div className="pb-4 border-b border-line/60">
+                  <h2 className="text-base font-bold text-fg">Affichage & Langue</h2>
+                  <p className="text-xs text-fg-muted mt-0.5">
+                    Personnalisez votre confort visuel sur l&apos;application.
+                  </p>
                 </div>
-              </div>
 
-              <button
-                onClick={savePreferences}
-                disabled={saving}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white font-bold px-5 py-2.5 rounded-xl transition-colors"
-              >
-                {saving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Enregistrement...
-                  </>
-                ) : (
-                  <>
-                    <Save size={16} />
+                {/* Thème clair / sombre */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-fg block">
+                    Mode d&apos;apparence
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => theme !== 'light' && toggleTheme()}
+                      className={`p-3.5 rounded-lg border text-left transition-colors cursor-pointer flex items-center gap-3 ${
+                        theme === 'light'
+                          ? 'border-accent bg-accent/10 shadow-xs'
+                          : 'border-line bg-surface-muted/60 hover:border-line-hover'
+                      }`}
+                    >
+                      <Sun size={18} className={theme === 'light' ? 'text-accent' : 'text-fg-muted'} />
+                      <div>
+                        <p className="text-xs font-semibold text-fg">Mode Clair</p>
+                        <p className="text-[11px] text-fg-muted">Contraste diurne optimal</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => theme !== 'dark' && toggleTheme()}
+                      className={`p-3.5 rounded-lg border text-left transition-colors cursor-pointer flex items-center gap-3 ${
+                        theme === 'dark'
+                          ? 'border-accent bg-accent/10 shadow-xs'
+                          : 'border-line bg-surface-muted/60 hover:border-line-hover'
+                      }`}
+                    >
+                      <Moon size={18} className={theme === 'dark' ? 'text-accent' : 'text-fg-muted'} />
+                      <div>
+                        <p className="text-xs font-semibold text-fg">Mode Sombre</p>
+                        <p className="text-[11px] text-fg-muted">Repose les yeux le soir</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Langue */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-fg block">
+                    Langue du portail
+                  </label>
+                  <select
+                    value={preferences.langue}
+                    onChange={(e) => setPreferences({ langue: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg bg-surface border border-line text-xs text-fg cursor-pointer"
+                  >
+                    <option value="fr">Français (Cameroun / International)</option>
+                    <option value="en">English (Campus International)</option>
+                  </select>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleSavePreferences}
+                    isLoading={savingPrefs}
+                    leftIcon={<Save size={14} />}
+                  >
                     Enregistrer les préférences
-                  </>
-                )}
-              </button>
-            </div>
+                  </Button>
+                </div>
+              </GlassCard>
+            )}
+
           </div>
 
-          {/* Déconnexion */}
-          <div className="bg-white rounded-2xl border shadow-sm p-5">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
-                <LogOut size={20} className="text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-slate-900 mb-1">Se déconnecter</h3>
-                <p className="text-sm text-slate-600 mb-3">
-                  Déconnectez-vous de votre compte sur cet appareil
-                </p>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl transition-colors text-sm"
-                >
-                  <LogOut size={16} />
-                  Se déconnecter
-                </Link>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
-}
 
-export default function ParametresPage() {
-  return (
-    <StudentLayout>
-      <ParametresContent />
+      </div>
     </StudentLayout>
   );
 }

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans, Manrope } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { AuthProvider } from "@/lib/auth/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { Toaster } from 'react-hot-toast';
+import AmbientBackground from "@/components/AmbientBackground";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +17,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+});
+
 export const metadata: Metadata = {
-  title: "CampusLite - Plateforme Universitaire & Gestion Académique",
-  description: "Plateforme institutionnelle multi-établissements pour le suivi des notes, des salles, du planning et des requêtes académiques",
+  title: "CampusLite - Plateforme Universitaire",
+  description: "Suivi des notes, planning, requêtes académiques et vie universitaire",
 };
 
 export default function RootLayout({
@@ -29,14 +42,16 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      data-theme="system"
+      className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} ${manrope.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)] transition-colors duration-150">
+      <body className="min-h-full flex flex-col bg-bg text-fg">
+        <AmbientBackground />
         <ThemeProvider>
           <QueryProvider>
             <AuthProvider>
-              <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+              <Toaster position="top-right" richColors closeButton />
               {children}
             </AuthProvider>
           </QueryProvider>

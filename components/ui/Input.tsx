@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -14,54 +14,46 @@ export default function Input({
   helperText,
   leftIcon,
   rightIcon,
+  id,
   className = '',
+  disabled,
   ...props
 }: InputProps) {
+  const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+
   return (
-    <div className="w-full">
+    <div className="w-full space-y-1.5">
       {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+        <label htmlFor={inputId} className="block text-sm font-medium text-fg">
           {label}
         </label>
       )}
-      
       <div className="relative">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-fg-muted">
             {leftIcon}
           </div>
         )}
-        
         <input
-          className={`
-            w-full h-10 px-3 
-            ${leftIcon ? 'pl-10' : ''} 
-            ${rightIcon ? 'pr-10' : ''}
-            bg-slate-50/50 border border-slate-200 rounded-xl
-            text-sm text-slate-800 placeholder:text-slate-400/80
-            transition-smooth
-            focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 focus:bg-white
-            disabled:bg-slate-50 disabled:cursor-not-allowed
-            ${error ? 'border-rose-400 focus:ring-rose-400/10 focus:border-rose-400' : ''}
-            ${className}
-          `}
+          id={inputId}
+          disabled={disabled}
+          className={`w-full rounded-md border bg-surface text-fg placeholder:text-fg-muted transition-colors-fast text-base py-2 ${
+            leftIcon ? 'pl-9' : 'pl-3'
+          } ${rightIcon ? 'pr-9' : 'pr-3'} ${
+            error
+              ? 'border-danger-fg focus:border-danger-fg focus-visible:outline-danger-fg'
+              : 'border-line-strong focus:border-accent'
+          } disabled:opacity-50 disabled:bg-surface-muted disabled:cursor-not-allowed ${className}`}
           {...props}
         />
-        
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-fg-muted">
             {rightIcon}
           </div>
         )}
       </div>
-      
-      {error && (
-        <p className="mt-1.5 text-xs text-red-500">{error}</p>
-      )}
-      
-      {helperText && !error && (
-        <p className="mt-1.5 text-xs text-neutral-500">{helperText}</p>
-      )}
+      {error && <p className="text-xs text-danger-fg">{error}</p>}
+      {!error && helperText && <p className="text-xs text-fg-muted">{helperText}</p>}
     </div>
   );
 }

@@ -401,8 +401,8 @@
       "must_set_password": false,
       "fonction": "Directeur des Systèmes d'Information",
       "created_at": "2026-01-01T08:00:00.000Z",
-      "updated_at": "2026-10-01T11:21:45.769Z",
-      "last_login": "2026-10-01T11:21:45.757Z"
+      "updated_at": "2026-10-06T14:23:55.989Z",
+      "last_login": "2026-10-06T14:23:55.986Z"
     },
     {
       "id": "a1a2c3d4-0002-4000-8000-000000000002",
@@ -473,8 +473,8 @@
       "is_active": true,
       "must_set_password": false,
       "created_at": "2026-01-01T08:00:00.000Z",
-      "updated_at": "2026-10-01T12:52:31.376Z",
-      "last_login": "2026-10-01T12:52:31.369Z"
+      "updated_at": "2026-10-06T14:25:12.333Z",
+      "last_login": "2026-10-06T14:25:12.329Z"
     },
     {
       "id": "a1a2c3d4-0006-4000-8000-000000000006",
@@ -511,8 +511,8 @@
       "is_active": true,
       "must_set_password": false,
       "created_at": "2026-01-01T08:00:00.000Z",
-      "updated_at": "2026-10-01T11:02:08.135Z",
-      "last_login": "2026-10-01T11:02:08.131Z"
+      "updated_at": "2026-10-06T14:22:58.272Z",
+      "last_login": "2026-10-06T14:22:58.269Z"
     },
     {
       "id": "a1a2c3d4-0008-4000-8000-000000000008",
@@ -1098,6 +1098,66 @@
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
       "created_at": "2026-10-01T12:52:31.386Z",
       "updated_at": "2026-10-01T12:52:31.386Z"
+    },
+    {
+      "id": "c35f9dcd-6e56-41dd-9968-89b44ed5ee65",
+      "user_id": "a1a2c3d4-0005-4000-8000-000000000005",
+      "action": "user_login",
+      "entity_type": "user",
+      "entity_id": "a1a2c3d4-0005-4000-8000-000000000005",
+      "description": "Connexion réussie",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "created_at": "2026-10-06T11:46:17.217Z",
+      "updated_at": "2026-10-06T11:46:17.217Z"
+    },
+    {
+      "id": "9ad63918-6542-4ac3-823b-39138cee36bc",
+      "user_id": "a1a2c3d4-0005-4000-8000-000000000005",
+      "action": "user_login",
+      "entity_type": "user",
+      "entity_id": "a1a2c3d4-0005-4000-8000-000000000005",
+      "description": "Connexion réussie",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "created_at": "2026-10-06T13:58:36.256Z",
+      "updated_at": "2026-10-06T13:58:36.256Z"
+    },
+    {
+      "id": "01f964f6-84c5-4115-b28e-a54b12883848",
+      "user_id": "a1a2c3d4-0007-4000-8000-000000000007",
+      "action": "user_login",
+      "entity_type": "user",
+      "entity_id": "a1a2c3d4-0007-4000-8000-000000000007",
+      "description": "Connexion réussie",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "created_at": "2026-10-06T14:22:58.278Z",
+      "updated_at": "2026-10-06T14:22:58.278Z"
+    },
+    {
+      "id": "bd4075ad-a1d2-4470-ac2d-6a84a41a2e2d",
+      "user_id": "a1a2c3d4-0001-4000-8000-000000000001",
+      "action": "user_login",
+      "entity_type": "user",
+      "entity_id": "a1a2c3d4-0001-4000-8000-000000000001",
+      "description": "Connexion réussie",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "created_at": "2026-10-06T14:23:56.002Z",
+      "updated_at": "2026-10-06T14:23:56.002Z"
+    },
+    {
+      "id": "da71e3cc-373a-486a-b16e-72a8cbccc2de",
+      "user_id": "a1a2c3d4-0005-4000-8000-000000000005",
+      "action": "user_login",
+      "entity_type": "user",
+      "entity_id": "a1a2c3d4-0005-4000-8000-000000000005",
+      "description": "Connexion réussie",
+      "ip_address": "::1",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+      "created_at": "2026-10-06T14:25:12.340Z",
+      "updated_at": "2026-10-06T14:25:12.340Z"
     }
   ],
   "ai_suggestions": [
@@ -1125,22 +1185,22 @@
       "created_at": "2026-09-27T14:22:50.159Z"
     },
     {
-      "token": "iuc_token_a1a2c3d4-0007-4000-8000-000000000007_1790852528111",
+      "token": "iuc_token_a1a2c3d4-0007-4000-8000-000000000007_1791296578248",
       "user_id": "a1a2c3d4-0007-4000-8000-000000000007",
       "auth_user_id": "auth-ens-001",
-      "created_at": "2026-10-01T11:02:08.111Z"
+      "created_at": "2026-10-06T14:22:58.248Z"
     },
     {
-      "token": "iuc_token_a1a2c3d4-0001-4000-8000-000000000001_1790853705748",
+      "token": "iuc_token_a1a2c3d4-0001-4000-8000-000000000001_1791296635980",
       "user_id": "a1a2c3d4-0001-4000-8000-000000000001",
       "auth_user_id": "auth-admin-001",
-      "created_at": "2026-10-01T11:21:45.748Z"
+      "created_at": "2026-10-06T14:23:55.980Z"
     },
     {
-      "token": "iuc_token_a1a2c3d4-0005-4000-8000-000000000005_1790859151351",
+      "token": "iuc_token_a1a2c3d4-0005-4000-8000-000000000005_1791296712313",
       "user_id": "a1a2c3d4-0005-4000-8000-000000000005",
       "auth_user_id": "auth-etudiant-001",
-      "created_at": "2026-10-01T12:52:31.351Z"
+      "created_at": "2026-10-06T14:25:12.313Z"
     }
   ],
   "courses": [

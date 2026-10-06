@@ -1,22 +1,38 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  ArrowLeft, FileText, Upload, X, AlertCircle, CheckCircle,
-  Send, Home, Paperclip, Loader2, Zap, ShieldCheck, Printer, ExternalLink
+  ArrowLeft,
+  ArrowRight,
+  Upload,
+  X,
+  FileCheck,
+  Zap,
+  CheckCircle,
+  FileText,
+  AlertCircle,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import StudentLayout from '../components/StudentLayout';
 import { useStudent, useCategories } from '@/lib/hooks';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import OfficialDocumentModal from '@/components/OfficialDocumentModal';
+import GlassCard from '@/components/ui/GlassCard';
+import AnimatedStepper from '@/components/ui/AnimatedStepper';
+import RequestTimeline from '@/components/ui/RequestTimeline';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Textarea from '@/components/ui/Textarea';
+import StatusBadge from '@/components/ui/StatusBadge';
+import Skeleton from '@/components/ui/Skeleton';
 
-const PRIORITES = [
-  { value: 'basse', label: 'Basse (Normale)' },
-  { value: 'moyenne', label: 'Moyenne (Standard)' },
-  { value: 'haute', label: 'Haute (Urgente)' },
+const STEPS = [
+  { id: 1, title: 'Démarche', description: 'Choix du service' },
+  { id: 2, title: 'Détails', description: 'Motif et pièces' },
+  { id: 3, title: 'Validation', description: 'Récapitulatif' },
 ];
 
 function NouvelleRequeteContent() {
@@ -24,7 +40,8 @@ function NouvelleRequeteContent() {
   const searchParams = useSearchParams();
   const { student, loading: studentLoading } = useStudent();
   const { categories, loading: categoriesLoading } = useCategories();
-  
+
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     titre: searchParams.get('titre') || '',
     categorie: '',
@@ -37,7 +54,6 @@ function NouvelleRequeteContent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDocModal, setShowDocModal] = useState(false);
 
-  // Filtrer les catégories selon le rôle du requérant (étudiant, enseignant, personnel)
   const userRole = student?.role_code || 'etudiant';
 
   const availableCategories = categories.filter((cat) => {
@@ -48,7 +64,7 @@ function NouvelleRequeteContent() {
 
   const selectedCategoryObj = categories.find((c) => c.id === formData.categorie);
 
-  // Détecter source et pré-remplir la catégorie appropriée
+  // Pré-remplissage selon paramètres URL
   useEffect(() => {
     const source = searchParams.get('source');
     const paramTitre = searchParams.get('titre');
@@ -56,7 +72,11 @@ function NouvelleRequeteContent() {
 
     if (categories.length > 0) {
       if (source === 'releve_notes') {
-        const claimCat = categories.find((c) => c.name.toLowerCase().includes('réclamation') || c.name.toLowerCase().includes('note'));
+        const claimCat = categories.find(
+          (c) =>
+            c.name.toLowerCase().includes('réclamation') ||
+            c.name.toLowerCase().includes('note')
+        );
         if (claimCat) {
           setFormData((prev) => ({
             ...prev,
@@ -66,7 +86,12 @@ function NouvelleRequeteContent() {
           }));
         }
       } else if (source === 'planner_salle') {
-        const roomCat = categories.find((c) => c.name.toLowerCase().includes('matériel') || c.name.toLowerCase().includes('salle') || c.name.toLowerCase().includes('panne'));
+        const roomCat = categories.find(
+          (c) =>
+            c.name.toLowerCase().includes('matériel') ||
+            c.name.toLowerCase().includes('salle') ||
+            c.name.toLowerCase().includes('panne')
+        );
         if (roomCat) {
           setFormData((prev) => ({
             ...prev,
@@ -79,7 +104,7 @@ function NouvelleRequeteContent() {
     }
   }, [categories, searchParams]);
 
-  // Définir une priorité par défaut une fois les données chargées
+  // Priorité par défaut
   useEffect(() => {
     if (!formData.priorite && categories.length > 0) {
       fetch('/api/priorities')
@@ -110,11 +135,15 @@ function NouvelleRequeteContent() {
       if (!prev.description || prev.description.trim() === '') {
         if (cat.is_auto_resolvable) {
           if (userRole === 'enseignant') {
-            defaultDesc = `Demande d'attestation de travail et de services d'enseignement pour l'année académique ${student?.annee_academique || '2025-2026'}.`;
+            defaultDesc = `Demande d'attestation de travail et services d'enseignement pour l'année ${
+              student?.annee_academique || '2025-2026'
+            }.`;
           } else if (userRole === 'personnel') {
             defaultDesc = `Demande d'attestation de travail et prise de service administrative pour l'année en cours.`;
           } else {
-            defaultDesc = `Demande d'attestation de scolarité officielle pour l'année académique ${student?.annee_academique || '2025-2026'}.`;
+            defaultDesc = `Demande d'attestation de scolarité officielle pour l'année académique ${
+              student?.annee_academique || '2025-2026'
+            }.`;
           }
         }
       }
@@ -132,16 +161,6 @@ function NouvelleRequeteContent() {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -153,21 +172,39 @@ function NouvelleRequeteContent() {
     setFichiers((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const validate = () => {
+  const validateStep = (step: number) => {
     const newErrors: Record<string, string> = {};
-    if (!formData.titre.trim()) newErrors.titre = 'Le titre est requis';
-    if (!formData.categorie) newErrors.categorie = 'La catégorie est requise';
-    if (!formData.description.trim()) newErrors.description = 'La description est requise';
-    if (formData.description.trim().length < 15) {
-      newErrors.description = 'La description doit contenir au moins 15 caractères';
+    if (step === 1) {
+      if (!formData.categorie) newErrors.categorie = 'Veuillez sélectionner une démarche';
+    }
+    if (step === 2) {
+      if (!formData.titre.trim()) newErrors.titre = 'L&apos;intitulé de la demande est requis';
+      if (!formData.description.trim()) {
+        newErrors.description = 'Veuillez décrire le motif de votre démarche';
+      } else if (formData.description.trim().length < 15) {
+        newErrors.description = 'La description doit comporter au moins 15 caractères';
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const goToNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep((prev) => Math.min(prev + 1, 3));
+    }
+  };
+
+  const goToPrevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validateStep(2)) {
+      setCurrentStep(2);
+      return;
+    }
 
     setLoading(true);
 
@@ -184,14 +221,15 @@ function NouvelleRequeteContent() {
 
       const priorityRes = await fetch('/api/priorities');
       const priorityData = await priorityRes.json();
-      const selectedPriority = priorityData.data?.find(
-        (p: any) =>
-          p.name.toLowerCase() === formData.priorite.toLowerCase() ||
-          p.id === formData.priorite
-      ) || priorityData.data?.[0];
+      const selectedPriority =
+        priorityData.data?.find(
+          (p: any) =>
+            p.name.toLowerCase() === formData.priorite.toLowerCase() ||
+            p.id === formData.priorite
+        ) || priorityData.data?.[0];
 
       if (!selectedPriority) {
-        toast.error('Erreur de priorité');
+        toast.error('Erreur lors du traitement de la priorité');
         setLoading(false);
         return;
       }
@@ -222,7 +260,7 @@ function NouvelleRequeteContent() {
       if (created.metadata?.auto_resolved) {
         toast.success('Document officiel certifié généré !', { duration: 4000 });
       } else {
-        toast.success('Demande enregistrée et assignée au service !');
+        toast.success('Demande transmise avec succès !');
       }
     } catch (error: any) {
       console.error('Error creating request:', error);
@@ -232,421 +270,432 @@ function NouvelleRequeteContent() {
     }
   };
 
-  // Écran de confirmation Black & White
+  // ── ÉCRAN DE SUCCÈS APRÈS TRANSMISSION ──
   if (successData) {
     const isAuto = successData.metadata?.auto_resolved;
     const docCode = successData.metadata?.document_code;
 
     return (
       <div className="p-4 sm:p-8 flex items-center justify-center min-h-[calc(100vh-8rem)]">
-        <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-8 sm:p-10 max-w-lg w-full text-center">
-          
-          <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center mx-auto mb-5 shadow-xs">
-            {isAuto ? <Zap size={28} /> : <CheckCircle size={28} />}
+        <GlassCard variant="glass" withShine={true} className="p-6 sm:p-10 max-w-lg w-full text-center space-y-6">
+          <div className="w-14 h-14 rounded-full bg-accent text-accent-fg flex items-center justify-center mx-auto shadow-md">
+            {isAuto ? <Zap size={26} /> : <CheckCircle size={26} />}
           </div>
 
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-950 mb-2">
-            {isAuto ? 'Document Prêt & Certifié Numériquement' : 'Demande Soumise avec Succès'}
-          </h2>
-
-          <p className="text-zinc-500 text-xs sm:text-sm mb-6 leading-relaxed">
-            {isAuto ? (
-              <>
-                Votre certificat officiel a été émis et scellé électroniquement avec son QR Code d'authentification universitaire.
-              </>
-            ) : (
-              <>
-                Votre demande porte la référence <strong className="text-black font-mono">{successData.reference}</strong> et a été transmise au service instructeur compétent.
-              </>
-            )}
-          </p>
-
-          {isAuto && (
-            <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-5 mb-6 text-left space-y-3">
-              <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                <span className="text-xs font-mono uppercase text-zinc-500 font-bold">Réf. Demande</span>
-                <span className="text-xs font-mono font-bold text-zinc-900">{successData.reference}</span>
-              </div>
-              <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                <span className="text-xs font-mono uppercase text-zinc-500 font-bold">Code Certificat</span>
-                <span className="text-xs font-mono font-bold text-black">{docCode}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono uppercase text-zinc-500 font-bold">Statut de validation</span>
-                <span className="text-xs font-bold text-black flex items-center gap-1">
-                  <ShieldCheck size={14} /> Scellé (Direction des Études)
-                </span>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowDocModal(true)}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white font-bold px-4 py-2.5 rounded-lg text-xs transition-colors"
-                >
-                  <Printer size={15} />
-                  Consulter & Imprimer
-                </button>
-                {docCode && (
-                  <Link
-                    href={`/verify/${docCode}`}
-                    target="_blank"
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white text-zinc-800 border border-zinc-300 hover:bg-zinc-50 rounded-lg text-xs font-semibold transition-colors"
-                  >
-                    <ExternalLink size={13} />
-                    Contrôle QR
-                  </Link>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
-            <Link
-              href="/mes-requetes"
-              className="inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white font-bold px-6 py-2.5 rounded-lg transition-colors text-xs"
-            >
-              Voir la liste des requêtes
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setSuccessData(null);
-                setFormData({ titre: '', categorie: '', priorite: '', description: '' });
-              }}
-              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-zinc-50 text-zinc-800 border border-zinc-200 font-semibold px-5 py-2.5 rounded-lg transition-colors text-xs"
-            >
-              Nouvelle demande
-            </button>
+          <div className="space-y-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
+              {isAuto ? 'Document certifié immédiatement' : 'Demande transmise avec succès'}
+            </h2>
+            <p className="text-sm text-fg-muted">
+              {isAuto
+                ? 'Ton attestation a été scellée électroniquement avec QR code officiel.'
+                : `Ta demande porte la référence ${successData.reference} et a été assignée aux services compétents.`}
+            </p>
           </div>
 
-          {/* Modal du document */}
-          {isAuto && docCode && (
-            <OfficialDocumentModal
-              isOpen={showDocModal}
-              onClose={() => setShowDocModal(false)}
-              document={{
-                type: 'attestation',
-                title: successData.title,
-                code: docCode,
-                date: new Date().toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                }),
-                requesterName: `${student?.first_name} ${student?.last_name}`,
-                matricule: student?.matricule || 'N/A',
-                programOrFunction:
-                  userRole === 'enseignant'
-                    ? (student?.fonction || 'Enseignant - IUC')
-                    : userRole === 'personnel'
-                    ? (student?.fonction || 'Personnel Administratif')
-                    : `${student?.filiere || 'Génie Logiciel'} (${student?.niveau || 'L3'})`,
-                academicYear: student?.annee_academique || '2025-2026',
-              }}
+          {/* Frise initiale de la requête créée */}
+          <div className="p-4 rounded-lg bg-surface/80 border border-line/60 text-left">
+            <RequestTimeline
+              variant="compact"
+              statusSentence={
+                isAuto
+                  ? 'Attestation prête et téléchargeable sans délai.'
+                  : 'Reçue aujourd’hui. En cours d’aiguillage par la scolarité.'
+              }
+              steps={[
+                { id: '1', label: 'Déposée', date: 'Aujourd’hui', status: 'completed' },
+                {
+                  id: '2',
+                  label: 'Instruction',
+                  date: undefined,
+                  status: isAuto ? 'completed' : 'current',
+                },
+                {
+                  id: '3',
+                  label: 'Résolue',
+                  date: isAuto ? 'Prête' : undefined,
+                  status: isAuto ? 'completed' : 'upcoming',
+                },
+              ]}
             />
-          )}
+          </div>
 
-        </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            {isAuto && (
+              <Button
+                variant="primary"
+                onClick={() => setShowDocModal(true)}
+                leftIcon={<FileCheck size={16} />}
+              >
+                Télécharger le document
+              </Button>
+            )}
+            <Link href="/mes-requetes">
+              <Button variant="secondary">
+                Voir toutes mes requêtes
+              </Button>
+            </Link>
+          </div>
+        </GlassCard>
+
+        {showDocModal && (
+          <OfficialDocumentModal
+            isOpen={showDocModal}
+            onClose={() => setShowDocModal(false)}
+            document={{
+              type: 'attestation',
+              title: successData.title,
+              code: docCode || 'CERT-IUC-2026',
+              date: new Date().toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              }),
+              requesterName: `${student?.first_name || ''} ${student?.last_name || ''}`.trim() || 'Étudiant',
+              matricule: student?.matricule || 'N/A',
+              programOrFunction: `${student?.filiere || 'Génie Logiciel'} (${student?.niveau || 'L3'})`,
+              academicYear: student?.annee_academique || '2025-2026',
+            }}
+          />
+        )}
       </div>
     );
   }
-
-  if (studentLoading || categoriesLoading) {
-    return (
-      <div className="p-8 flex items-center justify-center min-h-[calc(100vh-8rem)]">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-zinc-900 mx-auto mb-3" />
-          <p className="text-zinc-500 text-xs font-mono">Chargement du formulaire de requête...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const roleTitle =
-    userRole === 'enseignant'
-      ? 'Nouvelle requête académique ou administrative'
-      : userRole === 'personnel'
-      ? 'Nouvelle demande interne de service'
-      : 'Formulaire de nouvelle requête';
 
   return (
-    <div className="p-4 sm:p-8 space-y-6 max-w-4xl mx-auto">
-      
-      {/* Navigation retour */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold text-zinc-500 hover:text-black transition-colors"
-        >
-          <ArrowLeft size={14} />
-          Retour au tableau de bord
-        </Link>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
-          CampusLite v3.0
-        </span>
-      </div>
-
-      {/* Titre & Description Monochrome */}
-      <div className="bg-white rounded-xl border border-zinc-200 p-6 sm:p-8 shadow-2xs">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-black text-white font-bold">
-                {userRole}
-              </span>
-              <span className="text-zinc-300">•</span>
-              <span className="text-xs text-zinc-500 font-mono">
-                {student?.matricule}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-950">
-              {roleTitle}
-            </h1>
-            <p className="text-zinc-500 text-xs sm:text-sm mt-1">
-              Remplissez les champs ci-dessous pour transmettre votre requête aux services universitaires.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Formulaire Principal */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        
-        {/* Étape 1 : Sélection Catégorie */}
-        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-            <div>
-              <h2 className="text-sm font-bold text-zinc-950 tracking-tight">
-                1. Sélectionner la catégorie de la demande <span className="text-red-500">*</span>
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                Chaque catégorie applique un délai maximal de réponse (SLA).
-              </p>
-            </div>
-            <span className="text-[10px] font-mono text-zinc-400">
-              {availableCategories.length} catégories
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {availableCategories.map((category) => {
-              const isSelected = formData.categorie === category.id;
-              const isAuto = category.is_auto_resolvable;
-
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => handleSelectCategory(category)}
-                  className={`p-3.5 rounded-lg border text-left transition-all relative flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-black bg-zinc-50 ring-1 ring-black shadow-xs'
-                      : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/50 bg-white'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-1.5 mb-1">
-                      <span className="font-bold text-zinc-950 text-xs leading-snug">
-                        {category.name}
-                      </span>
-                      {isAuto && (
-                        <span className="shrink-0 text-[9px] font-mono uppercase bg-black text-white px-1.5 py-0.2 rounded font-bold">
-                          Immédiat
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed">
-                      {category.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 pt-2 border-t border-zinc-100 flex items-center justify-between text-[10px] font-mono text-zinc-400">
-                    <span>SLA : {category.sla_hours || 48}h</span>
-                    <span className={isSelected ? 'text-black font-bold' : 'text-zinc-400'}>
-                      {isSelected ? 'Sélectionné' : 'Choisir'}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {errors.categorie && (
-            <p className="text-red-600 text-xs mt-2 flex items-center gap-1 font-medium">
-              <AlertCircle size={13} />
-              {errors.categorie}
-            </p>
-          )}
-
-          {selectedCategoryObj?.is_auto_resolvable && (
-            <div className="p-3.5 bg-[#09090b] text-white rounded-lg flex items-center gap-3 text-xs">
-              <Zap size={16} className="text-white shrink-0" />
-              <p className="text-zinc-300">
-                <strong className="text-white">Délivrance Numérique Instantanée :</strong> Ce certificat officiel sera délivré et vérifiable immédiatement à la soumission.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Étape 2 : Intitulé et Priorité */}
-        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-2xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-950 tracking-tight border-b border-zinc-100 pb-3">
-            2. Intitulé et niveau d'urgence
-          </h2>
-
-          <div>
-            <label htmlFor="titre" className="block text-xs font-mono uppercase text-zinc-500 font-bold mb-1.5">
-              Objet succinct de la demande <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="titre"
-              name="titre"
-              value={formData.titre}
-              onChange={handleChange}
-              placeholder="Ex: Demande d'attestation officielle de scolarité..."
-              className={`w-full h-10 bg-white border rounded-lg px-3 text-xs text-zinc-900 placeholder:text-zinc-400 outline-none transition-all ${
-                errors.titre ? 'border-red-500' : 'border-zinc-200 focus:border-black'
-              }`}
-            />
-            {errors.titre && (
-              <p className="text-red-600 text-xs mt-1.5 flex items-center gap-1">
-                <AlertCircle size={12} />
-                {errors.titre}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs font-mono uppercase text-zinc-500 font-bold mb-1.5">
-              Niveau de priorité
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {PRIORITES.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, priorite: value }))}
-                  className={`py-2 px-3 rounded-lg text-xs font-bold border transition-all text-center ${
-                    formData.priorite === value
-                      ? 'bg-black text-white border-black shadow-xs'
-                      : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Étape 3 : Exposé des motifs */}
-        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-2xs space-y-4">
-          <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
-            <h2 className="text-sm font-bold text-zinc-950 tracking-tight">
-              3. Détails & Précisions <span className="text-red-500">*</span>
-            </h2>
-            <span className="text-[10px] font-mono text-zinc-400">
-              {formData.description.length} car. (min 15)
-            </span>
-          </div>
-
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Détaillez le contexte de votre demande..."
-            rows={4}
-            className={`w-full bg-white border rounded-lg p-3 text-xs text-zinc-900 placeholder:text-zinc-400 outline-none resize-none transition-all ${
-              errors.description ? 'border-red-500' : 'border-zinc-200 focus:border-black'
-            }`}
-          />
-          {errors.description && (
-            <p className="text-red-600 text-xs flex items-center gap-1">
-              <AlertCircle size={12} />
-              {errors.description}
-            </p>
-          )}
-        </div>
-
-        {/* Étape 4 : Pièces justificatives */}
-        <div className="bg-white rounded-xl border border-zinc-200 p-6 shadow-2xs space-y-4">
-          <h2 className="text-sm font-bold text-zinc-950 tracking-tight border-b border-zinc-100 pb-3">
-            4. Pièces justificatives (optionnel)
-          </h2>
-
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-zinc-200 rounded-lg p-5 cursor-pointer hover:border-black hover:bg-zinc-50 transition-all">
-            <Upload size={22} className="text-zinc-400 mb-1" />
-            <span className="text-xs font-bold text-zinc-800">
-              Cliquer pour ajouter un fichier justificatif
-            </span>
-            <span className="text-[10px] font-mono text-zinc-400 mt-0.5">
-              PDF, JPG, PNG (Max 10 MB)
-            </span>
-            <input
-              type="file"
-              multiple
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </label>
-
-          {fichiers.length > 0 && (
-            <div className="space-y-1.5">
-              {fichiers.map((file, index) => (
-                <div key={index} className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-lg p-2.5 text-xs text-zinc-800 font-mono">
-                  <Paperclip size={14} className="text-zinc-400" />
-                  <span className="flex-1 truncate font-medium">{file.name}</span>
-                  <span className="text-[10px] text-zinc-400">{(file.size / 1024).toFixed(0)} KB</span>
-                  <button
-                    type="button"
-                    onClick={() => removeFile(index)}
-                    className="w-5 h-5 rounded hover:bg-zinc-200 flex items-center justify-center text-zinc-500"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Actions de validation */}
-        <div className="flex items-center justify-between gap-3 pt-2">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+      {/* En-tête sobre avec bouton retour */}
+      <div className="flex items-center justify-between pb-4 border-b border-line">
+        <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="px-5 py-2.5 border border-zinc-200 rounded-lg text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="w-8 h-8 rounded-md border border-line flex items-center justify-center text-fg-secondary hover:text-fg hover:bg-surface-hover transition-colors-fast"
+            aria-label="Retour au tableau de bord"
           >
-            Annuler
+            <ArrowLeft size={16} strokeWidth={1.5} />
           </Link>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 bg-black hover:bg-zinc-800 disabled:bg-zinc-300 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition-all shadow-xs"
-          >
-            {loading ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                Traitement...
-              </>
-            ) : selectedCategoryObj?.is_auto_resolvable ? (
-              <>
-                <Zap size={14} />
-                Générer & Certifier Immédiatement
-              </>
-            ) : (
-              <>
-                <Send size={14} />
-                Transmettre au service
-              </>
-            )}
-          </button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
+              Nouvelle démarche académique
+            </h1>
+            <p className="text-xs text-fg-muted">
+              Transmets ta demande directement au service universitaire compétent.
+            </p>
+          </div>
         </div>
+      </div>
 
+      {/* ── STEPPER ANIMÉ ── */}
+      <GlassCard variant="glass" withShine={false} className="p-4 sm:p-6">
+        <AnimatedStepper
+          steps={STEPS}
+          currentStep={currentStep}
+          onStepClick={(s) => setCurrentStep(s)}
+        />
+      </GlassCard>
+
+      {/* ── CONTENU DU FORMULAIRE PAR ÉTAPE (Transitions fluides AnimatePresence) ── */}
+      <form onSubmit={handleSubmit}>
+        <AnimatePresence mode="wait">
+          {/* ÉTAPE 1 : CHOIX DE LA DÉMARCHE */}
+          {currentStep === 1 && (
+            <motion.div
+              key="step-1"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-4"
+            >
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold text-fg">
+                  1. Choisis le type de démarche
+                </h2>
+                <p className="text-xs text-fg-muted">
+                  Sélectionne la démarche qui correspond à ton besoin.
+                </p>
+                {errors.categorie && (
+                  <p className="text-xs text-danger-fg font-medium pt-1">
+                    {errors.categorie}
+                  </p>
+                )}
+              </div>
+
+              {categoriesLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Skeleton className="h-28" />
+                  <Skeleton className="h-28" />
+                  <Skeleton className="h-28" />
+                  <Skeleton className="h-28" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {availableCategories.map((cat) => {
+                    const isSelected = formData.categorie === cat.id;
+
+                    return (
+                      <div
+                        key={cat.id}
+                        onClick={() => handleSelectCategory(cat)}
+                        className={`p-4 rounded-lg border transition-all cursor-pointer relative select-none ${
+                          isSelected
+                            ? 'glass border-accent ring-2 ring-accent/30 shadow-md'
+                            : 'glass hover:border-line-strong'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <p className="text-sm font-semibold text-fg">
+                            {cat.name}
+                          </p>
+                          {cat.is_auto_resolvable && (
+                            <StatusBadge variant="info">
+                              Instantané
+                            </StatusBadge>
+                          )}
+                        </div>
+
+                        <p className="text-xs text-fg-muted line-clamp-2 leading-relaxed">
+                          {cat.description || 'Démarche administrative standard.'}
+                        </p>
+
+                        <div className="mt-3 pt-2.5 border-t border-line/50 flex items-center justify-between text-[11px] text-fg-secondary">
+                          <span>
+                            {cat.is_auto_resolvable
+                              ? 'Délivrance immédiate'
+                              : 'Délai moyen : 48h'}
+                          </span>
+                          <span
+                            className={`font-semibold ${
+                              isSelected ? 'text-accent' : 'text-fg-muted'
+                            }`}
+                          >
+                            {isSelected ? 'Sélectionné' : 'Choisir'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end pt-4">
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={goToNextStep}
+                  disabled={!formData.categorie}
+                  rightIcon={<ArrowRight size={15} />}
+                >
+                  Continuer
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ÉTAPE 2 : DÉTAILS DE LA DEMANDE */}
+          {currentStep === 2 && (
+            <motion.div
+              key="step-2"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-4"
+            >
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold text-fg">
+                  2. Détails et justificatifs
+                </h2>
+                <p className="text-xs text-fg-muted">
+                  Précise ta situation pour permettre un traitement rapide.
+                </p>
+              </div>
+
+              <GlassCard variant="solid" className="space-y-4">
+                <Input
+                  label="Intitulé de la demande *"
+                  name="titre"
+                  value={formData.titre}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, titre: e.target.value }))
+                  }
+                  error={errors.titre}
+                  placeholder="Ex: Demande de révision de copie INF302"
+                />
+
+                <Textarea
+                  label="Description détaillée du motif *"
+                  name="description"
+                  rows={4}
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                  error={errors.description}
+                  placeholder="Explique clairement les éléments motivant ta requête (minimum 15 caractères)..."
+                  helperText="Les dossiers motivés et précis sont traités prioritairement."
+                />
+
+                {/* Upload de pièces jointes */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="block text-sm font-medium text-fg">
+                    Pièces justificatives (facultatif)
+                  </label>
+                  <label className="border-2 border-dashed border-line rounded-lg p-5 flex flex-col items-center justify-center text-center hover:border-accent transition-colors cursor-pointer bg-surface-muted/40">
+                    <Upload size={20} className="text-fg-muted mb-1.5" />
+                    <span className="text-xs font-semibold text-fg">
+                      Clique pour importer un fichier
+                    </span>
+                    <span className="text-[11px] text-fg-muted mt-0.5">
+                      PDF, JPG ou PNG jusqu&apos;à 10 Mo
+                    </span>
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+
+                  {fichiers.length > 0 && (
+                    <div className="space-y-1 pt-2">
+                      {fichiers.map((file, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-2 rounded-md bg-surface border border-line text-xs"
+                        >
+                          <span className="truncate max-w-[260px] font-medium text-fg">
+                            {file.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(idx)}
+                            className="text-fg-muted hover:text-danger-fg p-1 cursor-pointer"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+
+              <div className="flex items-center justify-between pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={goToPrevStep}
+                  leftIcon={<ArrowLeft size={15} />}
+                >
+                  Retour
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={goToNextStep}
+                  rightIcon={<ArrowRight size={15} />}
+                >
+                  Vérifier la demande
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ÉTAPE 3 : RÉCAPITULATIF & VALIDATION */}
+          {currentStep === 3 && (
+            <motion.div
+              key="step-3"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="space-y-4"
+            >
+              <div className="space-y-1">
+                <h2 className="text-base font-semibold text-fg">
+                  3. Récapitulatif avant transmission
+                </h2>
+                <p className="text-xs text-fg-muted">
+                  Vérifie l&apos;exactitude des informations avant de valider.
+                </p>
+              </div>
+
+              <GlassCard variant="glass" withShine={true} className="space-y-4">
+                <div className="space-y-1 pb-3 border-b border-line/60">
+                  <span className="text-xs text-fg-muted">Démarche sélectionnée</span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-base font-bold text-fg">
+                      {selectedCategoryObj?.name || 'Démarche académique'}
+                    </p>
+                    {selectedCategoryObj?.is_auto_resolvable && (
+                      <StatusBadge variant="info">Délivrance immédiate</StatusBadge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1 pb-3 border-b border-line/60">
+                  <span className="text-xs text-fg-muted">Intitulé</span>
+                  <p className="text-sm font-medium text-fg">{formData.titre}</p>
+                </div>
+
+                <div className="space-y-1 pb-3 border-b border-line/60">
+                  <span className="text-xs text-fg-muted">Motif renseigné</span>
+                  <p className="text-xs text-fg-secondary leading-relaxed whitespace-pre-wrap">
+                    {formData.description}
+                  </p>
+                </div>
+
+                {fichiers.length > 0 && (
+                  <div className="space-y-1 pb-3 border-b border-line/60">
+                    <span className="text-xs text-fg-muted">Justificatifs joints</span>
+                    <p className="text-xs text-fg font-medium">
+                      {fichiers.length} fichier(s) attaché(s)
+                    </p>
+                  </div>
+                )}
+
+                {/* Prévisualisation de la frise initiale */}
+                <div className="pt-2">
+                  <span className="text-xs text-fg-muted block mb-2">
+                    Circuit prévisionnel de traitement
+                  </span>
+                  <RequestTimeline
+                    variant="compact"
+                    statusSentence="Dès validation, ton dossier sera transmis au secrétariat académique."
+                    steps={[
+                      { id: '1', label: 'Dépôt immédiat', date: 'Aujourd’hui', status: 'current' },
+                      { id: '2', label: 'Instruction', date: undefined, status: 'upcoming' },
+                      { id: '3', label: 'Délivrance', date: undefined, status: 'upcoming' },
+                    ]}
+                  />
+                </div>
+              </GlassCard>
+
+              <div className="flex items-center justify-between pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={goToPrevStep}
+                  disabled={loading}
+                  leftIcon={<ArrowLeft size={15} />}
+                >
+                  Modifier
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={loading}
+                  leftIcon={<CheckCircle size={15} />}
+                >
+                  {selectedCategoryObj?.is_auto_resolvable
+                    ? 'Générer mon attestation'
+                    : 'Transmettre la demande'}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </form>
     </div>
   );
@@ -655,11 +704,15 @@ function NouvelleRequeteContent() {
 export default function NouvelleRequetePage() {
   return (
     <StudentLayout>
-      <Suspense fallback={
-        <div className="p-12 text-center font-mono text-xs text-zinc-400">
-          Chargement du formulaire...
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="p-8 max-w-4xl mx-auto space-y-4">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        }
+      >
         <NouvelleRequeteContent />
       </Suspense>
     </StudentLayout>

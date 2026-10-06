@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
@@ -13,13 +13,12 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>('system');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check saved theme or preference - Default is dark
-    const saved = (localStorage.getItem('campuslite_theme') || localStorage.getItem('iuc_theme')) as Theme | null;
-    const initialTheme: Theme = saved === 'light' ? 'light' : 'dark';
+    const saved = localStorage.getItem('campuslite_theme') as Theme | null;
+    const initialTheme: Theme = saved || 'light';
     setThemeState(initialTheme);
     applyTheme(initialTheme);
     setMounted(true);
@@ -29,14 +28,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     if (t === 'dark') {
       root.classList.add('dark');
-      root.classList.remove('light');
       root.setAttribute('data-theme', 'dark');
-      root.style.colorScheme = 'dark';
+    } else if (t === 'light') {
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
     } else {
       root.classList.remove('dark');
-      root.classList.add('light');
-      root.setAttribute('data-theme', 'light');
-      root.style.colorScheme = 'light';
+      root.setAttribute('data-theme', 'system');
     }
   };
 

@@ -1,0 +1,170 @@
+/* ==========================================================================
+   CampusLite : Tokens & Recettes de Verre (Direction Visuelle 2.0)
+   ========================================================================== */
+
+:root {
+  /* ── 1. Direction Ambiance : Base Clair (#EEF2F9) ── */
+  --bg: #EEF2F9;
+  --surface: #FFFFFF;
+  --surface-raised: #F8FAFC;
+  --surface-muted: #EBF0F7;
+  --surface-hover: #E2E8F0;
+
+  /* Orbes radiaux pour AmbientBackground (Direction A par défaut) */
+  --ambient-orb-1: rgba(29, 78, 216, 0.22); /* Bleu accent #1D4ED8 */
+  --ambient-orb-2: rgba(2, 132, 199, 0.18); /* Cyan poudré #0284C7 */
+  --ambient-orb-3: rgba(67, 56, 202, 0.12); /* Indigo désaturé */
+
+  /* ── 2. Recettes de Verre ── */
+  /* Niveau 1 : glass (cartes standard) */
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.70);
+  --glass-shadow: 0 8px 32px rgba(31, 41, 80, 0.08);
+
+  /* Niveau 2 : glass-raised (menus, popovers, navigation) */
+  --glass-raised-bg: rgba(255, 255, 255, 0.82);
+  --glass-raised-border: rgba(255, 255, 255, 0.85);
+  --glass-raised-shadow: 0 12px 40px rgba(31, 41, 80, 0.12);
+
+  /* Bordures discrètes */
+  --line: rgba(221, 225, 231, 0.8);
+  --line-strong: #8B93A1;
+
+  /* Textes (AA garantis sur verre et fond) */
+  --fg: #171B22;
+  --fg-secondary: #4A5363;
+  --fg-muted: #5F6877;
+
+  /* Accent (Bleu #1D4ED8) */
+  --accent: #1D4ED8;
+  --accent-hover: #1E40AF;
+  --accent-fg: #FFFFFF;
+  --accent-soft: rgba(29, 78, 216, 0.08);
+  --accent-text: #1D4ED8;
+
+  /* Statuts */
+  --success-fg: #166534; --success-bg: #E7F6EC;
+  --warning-fg: #8A4B00; --warning-bg: #FFF3DB;
+  --danger-fg:  #B42318; --danger-bg:  #FDECEA;
+  --danger:     #B42318;
+  --info-fg:    #1D4ED8; --info-bg:    #EAF0FF;
+
+  /* Graphiques : déclinaisons harmonieuses de l'accent et neutres bleutés */
+  --chart-1: #1D4ED8;
+  --chart-2: #3B82F6;
+  --chart-3: #60A5FA;
+  --chart-4: #93C5FD;
+  --chart-5: #64748B;
+
+  --focus-ring: #1D4ED8;
+  --shadow-overlay: 0 8px 24px rgba(16, 24, 40, 0.12);
+  --overlay: rgba(16, 24, 40, 0.45);
+
+  /* Mapping shadcn */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-fg);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--fg);
+  --muted: var(--surface-muted);
+  --muted-foreground: var(--fg-muted);
+  --accent-shadcn: var(--accent-soft);
+  --accent-shadcn-fg: var(--accent-text);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--accent-fg);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--focus-ring);
+}
+
+/* Mode sombre */
+.dark {
+  --bg: #0B1020;
+  --surface: #12182B;
+  --surface-raised: #182038;
+  --surface-muted: #101626;
+  --surface-hover: #1D2644;
+
+  --ambient-orb-1: rgba(47, 95, 216, 0.32); /* Bleu #2F5FD8 */
+  --ambient-orb-2: rgba(14, 165, 233, 0.22); /* Cyan profond */
+  --ambient-orb-3: rgba(99, 102, 241, 0.18); /* Indigo */
+
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.10);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+  --glass-raised-bg: rgba(255, 255, 255, 0.11);
+  --glass-raised-border: rgba(255, 255, 255, 0.16);
+  --glass-raised-shadow: 0 12px 40px rgba(0, 0, 0, 0.50);
+
+  --line: rgba(39, 45, 57, 0.8);
+  --line-strong: #707A8E;
+
+  --fg: #E8EAEE;
+  --fg-secondary: #A9B0BD;
+  --fg-muted: #8E96A5;
+
+  --accent: #2F5FD8;
+  --accent-hover: #2552C4;
+  --accent-fg: #FFFFFF;
+  --accent-soft: rgba(47, 95, 216, 0.16);
+  --accent-text: #7FA6FF;
+
+  --success-fg: #6EDC93; --success-bg: #14261B;
+  --warning-fg: #F5B954; --warning-bg: #2A2010;
+  --danger-fg:  #FF8A80; --danger-bg:  #2D1513;
+  --danger:     #C93B30;
+  --info-fg:    #7FA6FF; --info-bg:    #14203D;
+
+  --chart-1: #2F5FD8;
+  --chart-2: #60A5FA;
+  --chart-3: #7FA6FF;
+  --chart-4: #38BDF8;
+  --chart-5: #94A3B8;
+
+  --focus-ring: #7FA6FF;
+  --shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-fg);
+  --secondary: var(--surface-muted);
+  --secondary-foreground: var(--fg);
+  --muted: var(--surface-muted);
+  --muted-foreground: var(--fg-muted);
+  --accent-shadcn: var(--accent-soft);
+  --accent-shadcn-fg: var(--accent-text);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--accent-fg);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--focus-ring);
+}
+
+/* Direction Ambiance B : Bleu Nuit & Indigo Profond */
+[data-ambiance="direction-b"] {
+  --bg: #F1F4FA;
+  --ambient-orb-1: rgba(30, 64, 175, 0.20);
+  --ambient-orb-2: rgba(67, 56, 202, 0.18);
+  --ambient-orb-3: rgba(79, 70, 229, 0.10);
+}
+
+.dark[data-ambiance="direction-b"],
+[data-theme="dark"][data-ambiance="direction-b"] {
+  --bg: #080D1A;
+  --surface: #0E1528;
+  --ambient-orb-1: rgba(37, 99, 235, 0.28);
+  --ambient-orb-2: rgba(79, 70, 229, 0.22);
+  --ambient-orb-3: rgba(59, 130, 246, 0.14);
+}
